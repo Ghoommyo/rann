@@ -34,6 +34,14 @@ static func label(text: String, font_size: int, color := TEXT) -> Label:
 	return l
 
 
+## Gives `control` keyboard/gamepad focus once the screen is ready, unless the
+## screen has already been left by then.
+static func focus_later(control: Control) -> void:
+	(func():
+		if is_instance_valid(control) and control.is_inside_tree():
+			control.grab_focus()).call_deferred()
+
+
 ## A large, touch-friendly button.
 static func button(text: String, on_pressed: Callable, min_width := 360.0) -> Button:
 	var b := Button.new()

@@ -132,6 +132,19 @@ func test_events_are_not_repeated_after_rollback():
 	assert_between(seen, real, real + 2, "each contact shown once (seen %d, real %d)" % [seen, real])
 
 
+func test_ignores_packets_from_an_older_match():
+	var pair := SimTransport.make_pair()
+	var old := RollbackSession.new(defs, 0, 2, pair[0], FightState.create(defs), 0)
+	var fresh := RollbackSession.new(defs, 1, 2, pair[1], FightState.create(defs), 1)
+	for i in 5:
+		old.tick(InputFrame.RIGHT)
+	var advanced := 0
+	for i in 20:
+		if fresh.tick(0):
+			advanced += 1
+	assert_eq(advanced, RollbackSession.MAX_ROLLBACK + 2, "old match's inputs were not used")
+
+
 func test_rollback_cost():
 	var s := FightState.create(defs)
 	var start := Time.get_ticks_usec()

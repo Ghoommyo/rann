@@ -82,18 +82,21 @@ func _make_card(def: CharacterDef) -> Button:
 
 
 func _update_title() -> void:
-	var who := "PLAYER 1"
+	var who := "YOU" if Game.mode == Game.Mode.ONLINE else "PLAYER 1"
 	if _picking == 1:
 		who = "PLAYER 2" if Game.mode == Game.Mode.LOCAL_VERSUS else \
 			("CPU OPPONENT" if Game.mode == Game.Mode.VERSUS_CPU else "TRAINING DUMMY")
 	_title.text = "%s — choose your fighter" % who
 	if _cards.get_child_count() > 0:
-		(_cards.get_child(0) as Control).grab_focus.call_deferred()
+		MenuStyle.focus_later(_cards.get_child(0))
 
 
 func _pick(def: CharacterDef) -> void:
 	if _picking == 0:
 		Game.p1_id = def.id
+		if Game.mode == Game.Mode.ONLINE:
+			Game.go_to_online_lobby()  # the opponent picks on their own device
+			return
 		_picking = 1
 		_update_title()
 	else:

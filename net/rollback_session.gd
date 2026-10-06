@@ -33,6 +33,9 @@ var state: FightState
 var defs: Array[CharacterDef]
 var local_player: int  # 0 = P1 (host), 1 = P2
 var input_delay: int
+## Counts rematches. Packets from an earlier match (still in flight when a
+## rematch starts) carry an older number and are ignored.
+var match_number: int
 
 # --- Stats for the HUD ---
 var ping_ms := 0
@@ -67,8 +70,9 @@ var _last_receive_ms := 0
 
 
 func _init(fight_defs: Array[CharacterDef], player: int, delay: int, transport: NetTransport,
-		start_state: FightState) -> void:
+		start_state: FightState, match_no := 0) -> void:
 	defs = fight_defs
+	match_number = match_no
 	local_player = player
 	input_delay = delay
 	_transport = transport
@@ -201,10 +205,12 @@ func _receive() -> void:
 		_last_receive_ms = Time.get_ticks_msec()
 		match msg[0]:
 			NetMessages.Type.INPUT:
-				_on_inputs(msg[1], msg[2], msg[3])
+				if msg[1] == match_number:
+					_on_inputs(msg[2], msg[3], msg[4])
 			NetMessages.Type.CHECKSUM:
-				_remote_checksums[msg[1]] = msg[2]
-				_compare_checksum(msg[1])
+				if msg[1] == match_number:
+					_remote_checksums[msg[2]] = msg[3]
+					_compare_checksum(msg[2])
 			NetMessages.Type.PING:
 				_transport.send(NetMessages.encode(NetMessages.Type.PONG, [msg[1]]), false)
 			NetMessages.Type.PONG:
@@ -238,7 +244,8 @@ func _send_inputs() -> void:
 	var bits := PackedInt32Array()
 	for f in range(first, last + 1):
 		bits.append(_local_inputs.get(f, 0))
-	_transport.send(NetMessages.encode(NetMessages.Type.INPUT, [first, bits, _last_remote_frame]), false)
+	_transport.send(NetMessages.encode(NetMessages.Type.INPUT,
+		[match_number, first, bits, _last_remote_frame]), false)
 
 
 func _send_checksums() -> void:
@@ -246,7 +253,7 @@ func _send_checksums() -> void:
 		if _sent_checksums.has(frame) or frame - 1 > _last_remote_frame:
 			continue  # not final yet: an input before it could still change
 		_sent_checksums[frame] = true
-		send_message(NetMessages.Type.CHECKSUM, [frame, _local_checksums[frame]])
+		send_message(NetMessages.Type.CHECKSUM, [match_number, frame, _local_checksums[frame]])
 		_compare_checksum(frame)
 
 

@@ -19,7 +19,10 @@ var _side: Array[Dictionary] = []  # per player: nodes + trail state
 var _timer: Label
 var _message: Label
 var _debug: Label
+var _notice: Label
 var debug_visible := false
+## A line of text under the timer (online status, disconnects, …).
+var notice := ""
 
 
 func _ready() -> void:
@@ -48,6 +51,9 @@ func _ready() -> void:
 	_message.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_debug = _label(13)
 	_debug.add_theme_constant_override("outline_size", 3)
+	_notice = _label(20)
+	_notice.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_notice.add_theme_color_override("font_color", Color(1.0, 0.85, 0.4))
 
 
 func show_state(state: FightState, defs: Array[CharacterDef], delta: float, debug_lines: PackedStringArray) -> void:
@@ -62,6 +68,10 @@ func show_state(state: FightState, defs: Array[CharacterDef], delta: float, debu
 	_message.position = Vector2(0, size.y * 0.28)
 	_message.size = Vector2(w, 180)
 	_message.text = _message_text(state, defs)
+
+	_notice.text = notice
+	_notice.position = Vector2(0, 112)
+	_notice.size = Vector2(w, 30)
 
 	_debug.visible = debug_visible
 	_debug.position = Vector2(MARGIN, 150)

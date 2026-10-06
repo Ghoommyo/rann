@@ -6,8 +6,8 @@
 ##
 ##   HELLO     [game_version, data_hash, character_id]     reliable
 ##   START     [p1_id, p2_id, input_delay]                 reliable, host → client
-##   INPUT     [first_frame, bits: PackedInt32Array, ack]  unreliable
-##   CHECKSUM  [frame, value]                              reliable
+##   INPUT     [match, first_frame, bits: PackedInt32Array, ack]  unreliable
+##   CHECKSUM  [match, frame, value]                       reliable
 ##   PING      [time_ms]   PONG [time_ms]                  unreliable
 ##   REMATCH   []          BYE []                          reliable
 class_name NetMessages

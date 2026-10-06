@@ -27,10 +27,8 @@ func _ready() -> void:
 	column.add_child(vs_cpu)
 	column.add_child(MenuStyle.button("Local Versus", func(): Game.go_to_character_select(Game.Mode.LOCAL_VERSUS)))
 	column.add_child(MenuStyle.button("Training", func(): Game.go_to_character_select(Game.Mode.TRAINING)))
-	var online := MenuStyle.button("Online  (coming in Phase 4)", func(): pass)
-	online.disabled = true
-	column.add_child(online)
+	column.add_child(MenuStyle.button("Online", func(): Game.go_to_character_select(Game.Mode.ONLINE)))
 	if not OS.has_feature("mobile") and not OS.has_feature("web"):
 		column.add_child(MenuStyle.button("Quit", func(): get_tree().quit()))
 
-	vs_cpu.grab_focus.call_deferred()
+	MenuStyle.focus_later(vs_cpu)

@@ -3,6 +3,8 @@
 ##
 ## 💡 Pausing just stops calling MatchSim.step() (see fight.gd). Because the
 ## whole fight is in FightState, nothing else needs to be frozen.
+## Online matches can't be paused (the other player keeps playing), so there
+## the menu only offers to leave.
 class_name PauseMenu
 extends Control
 
@@ -10,7 +12,7 @@ signal resumed
 signal restart_requested
 signal dummy_mode_requested
 
-var _panel: PanelContainer
+var _overlay: Control
 var _dummy_button: Button
 var _first_button: Button
 
@@ -25,19 +27,33 @@ func _ready() -> void:
 	pause_button.focus_mode = Control.FOCUS_NONE
 	add_child(pause_button)
 
+	_overlay = Control.new()
+	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_overlay.visible = false
+	add_child(_overlay)
+
 	var dim := ColorRect.new()
 	dim.color = Color(0, 0, 0, 0.55)
 	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_panel = PanelContainer.new()
-	_panel.set_anchors_preset(Control.PRESET_CENTER)
-	_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_overlay.add_child(dim)
+
+	var panel := PanelContainer.new()
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_overlay.add_child(panel)
+
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 10)
-	_panel.add_child(column)
-	column.add_child(MenuStyle.label("PAUSED", 40, MenuStyle.ACCENT))
-	_first_button = MenuStyle.button("Resume", close)
+	panel.add_child(column)
+
+	var online := Game.mode == Game.Mode.ONLINE
+	column.add_child(MenuStyle.label("MENU" if online else "PAUSED", 40, MenuStyle.ACCENT))
+	_first_button = MenuStyle.button("Back to the fight" if online else "Resume", close)
 	column.add_child(_first_button)
+	if online:
+		column.add_child(MenuStyle.button("Leave match", Game.go_to_main_menu))
+		return
 	column.add_child(MenuStyle.button("Restart match", _restart))
 	if Game.mode == Game.Mode.TRAINING:
 		_dummy_button = MenuStyle.button("", func(): dummy_mode_requested.emit())
@@ -45,26 +61,23 @@ func _ready() -> void:
 	column.add_child(MenuStyle.button("Character select", func(): Game.go_to_character_select(Game.mode)))
 	column.add_child(MenuStyle.button("Main menu", Game.go_to_main_menu))
 
-	var overlay := Control.new()
-	overlay.name = "Overlay"
-	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	overlay.add_child(dim)
-	overlay.add_child(_panel)
-	overlay.visible = false
-	add_child(overlay)
+
+## True when the game should stop simulating (never online).
+func is_paused() -> bool:
+	return _overlay.visible and Game.mode != Game.Mode.ONLINE
 
 
 func is_open() -> bool:
-	return $Overlay.visible
+	return _overlay.visible
 
 
 func open() -> void:
-	$Overlay.visible = true
+	_overlay.visible = true
 	_first_button.grab_focus()
 
 
 func close() -> void:
-	$Overlay.visible = false
+	_overlay.visible = false
 	resumed.emit()
 
 
