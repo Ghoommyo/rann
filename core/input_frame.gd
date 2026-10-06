@@ -64,3 +64,20 @@ static func to_numpad(bits: int, facing: int) -> int:
 		y = -1
 
 	return 5 + x + y * 3
+
+
+## The reverse of to_numpad(): turns a numpad direction (relative to
+## `facing`) back into screen directions. Used by the CPU to "press" inputs.
+static func from_numpad(numpad: int, facing: int) -> int:
+	var x := ((numpad - 1) % 3 - 1) * facing  # +1 = right on screen
+	var y := (numpad - 1) / 3 - 1             # +1 = up
+	var bits := 0
+	if x > 0:
+		bits |= RIGHT
+	elif x < 0:
+		bits |= LEFT
+	if y > 0:
+		bits |= UP
+	elif y < 0:
+		bits |= DOWN
+	return bits
