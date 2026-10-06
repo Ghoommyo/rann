@@ -116,6 +116,25 @@ func copy() -> FightState:
 	return c
 
 
+## Every field as readable text, for desync reports.
+func debug_dump() -> String:
+	var lines := PackedStringArray()
+	lines.append(_dump_object(self))
+	for i in fighters.size():
+		lines.append("--- fighter %d ---" % i)
+		lines.append(_dump_object(fighters[i]))
+		lines.append("input history: %s" % str(range(InputBuffer.SIZE).map(func(a): return fighters[i].input.get_ago(a))))
+	return "\n".join(lines)
+
+
+static func _dump_object(obj: Object) -> String:
+	var lines := PackedStringArray()
+	for prop in obj.get_property_list():
+		if prop.usage & PROPERTY_USAGE_SCRIPT_VARIABLE and prop.name not in ["fighters", "input", "events"]:
+			lines.append("%s = %s" % [prop.name, str(obj.get(prop.name))])
+	return "\n".join(lines)
+
+
 ## A number that summarizes the entire state. Two games with the same
 ## checksum on the same frame are in sync.
 func checksum() -> int:
