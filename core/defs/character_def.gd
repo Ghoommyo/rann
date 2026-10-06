@@ -53,11 +53,14 @@ extends Resource
 @export_group("Look")
 ## Placeholder capsule color, also used for HUD accents.
 @export var color := Color(0.6, 0.6, 0.6)
-## Optional 3D model scene with an AnimationPlayer (see plans/07-guide-mixamo-import.md).
-## Without one, a capsule is drawn.
+## Optional 3D model (see plans/07-guide-mixamo-import.md). Without one,
+## a capsule is drawn. Set automatically by tools/build_animation_libraries.gd.
 @export var model_scene: PackedScene
-## Uniform scale applied to the model.
-@export var model_scale := 1.0
+## The character's animations (idle, walk_forward, jab, …). Built by
+## tools/build_animation_libraries.gd from the downloaded animation files.
+@export var animation_library: AnimationLibrary
+## Model scale. 0 = scale automatically so the model is stand_height tall.
+@export var model_scale := 0.0
 @export var portrait: Texture2D
 
 @export_group("Moves")

@@ -85,11 +85,41 @@ func show_state(prev: FighterState, cur: FighterState, alpha: float, global_fram
 
 func _setup_model() -> void:
 	_model = _def.model_scene.instantiate()
-	_model.scale = Vector3.ONE * _def.model_scale
 	add_child(_model)
+	_model.scale = Vector3.ONE * (_def.model_scale if _def.model_scale > 0.0 else _fit_scale())
+
 	_anim = _find_animation_player(_model)
-	if _anim:
-		_anim.speed_scale = 0.0  # we pose it manually every frame
+	if _anim == null and _def.animation_library:
+		# A model downloaded "with skin" has no animations of its own: add a player.
+		# Its tracks are relative to the model root, which is this player's parent.
+		_anim = AnimationPlayer.new()
+		_model.add_child(_anim)
+	if _anim == null:
+		return
+	if _def.animation_library and not _anim.has_animation_library("moves"):
+		_anim.add_animation_library("moves", _def.animation_library)
+	_anim.speed_scale = 0.0  # we pose it manually every frame
+
+
+## Scale that makes the model as tall as the character's stand_height.
+func _fit_scale() -> float:
+	var bounds := AABB()
+	var first := true
+	for node in _model.find_children("*", "MeshInstance3D", true, false):
+		var mesh_instance := node as MeshInstance3D
+		# Transform relative to the model root (works even before entering the scene tree).
+		var xf := Transform3D()
+		var n: Node = mesh_instance
+		while n != _model:
+			if n is Node3D:
+				xf = (n as Node3D).transform * xf
+			n = n.get_parent()
+		var box := xf * mesh_instance.get_aabb()
+		bounds = box if first else bounds.merge(box)
+		first = false
+	if first or bounds.size.y <= 0.01:
+		return 1.0
+	return FixedMath.to_meters(_def.stand_height) / bounds.size.y
 
 
 func _show_model(cur: FighterState, global_frame: int) -> void:

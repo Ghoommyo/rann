@@ -108,31 +108,20 @@ StyleComponent (base class, deterministic)  ← one pluggable mechanic
 
 ### How a component plugs in
 
-Every `StyleComponent` can override a small set of **hooks**, which the core state machine calls at fixed points each tick:
+Every `StyleComponent` (`core/style/style_component.gd`) can override a small set of **hooks**. The engine calls them at fixed points each tick:
 
-```gdscript
-# core/style/style_component.gd  (sketch)
-class_name StyleComponent
-extends Resource
+| Hook | Called | Example use |
+|---|---|---|
+| `init_state(f)` | round start | put starting values in `f.style_data` |
+| `on_tick(f)` | every tick, before actions | count charge frames, open the parry window |
+| `can_use_move(f, move)` | before a move starts | stance or meter requirements |
+| `on_move_started(f, move)` | a move starts | spend meter, switch stance |
+| `on_contact(f, move, blocked)` | your move hit or was blocked | gain meter |
+| `on_hit_received(f, move)` | you got hit | reset stance, gain meter |
+| `try_parry(f, move)` | an attack is about to connect | return true to parry |
+| `hud_values(f)` | every drawn frame (view) | meters and stance name on the HUD |
 
-# Called once when the match starts. Put this component's per-fighter
-# data (e.g. current stance, charge counter) into `fighter.style_data`
-# so it is part of FightState and gets saved/restored by rollback.
-func init_state(fighter: FighterState) -> void: pass
-
-# Called every tick before moves are chosen. Update counters here.
-func on_tick(fighter: FighterState, input: InputBuffer) -> void: pass
-
-# Can this move be used right now? (e.g. stance or meter requirements)
-func can_use_move(fighter: FighterState, move: MoveDef) -> bool: return true
-
-# Lets a component offer extra moves (e.g. stance-only moves).
-func extra_moves(fighter: FighterState) -> Array[MoveDef]: return []
-
-# React to hits (e.g. gain meter, trigger a parry).
-func on_hit_landed(fighter: FighterState, move: MoveDef) -> void: pass
-func on_hit_received(fighter: FighterState, move: MoveDef) -> bool: return false # true = cancel the hit (parry)
-```
+Stance-only moves use `MoveDef.required_stance` / `enters_stance`, meter moves use `meter_cost`, and charge moves use `requires_charge`.
 
 > 💡 **Why components instead of one script per character?** With 20 characters, 20 scripts that each copy and tweak the state machine become impossible to balance or debug. Components are small, tested once and reused. Two characters with stances share `StanceComponent` and only differ in data. A truly new mechanic means writing **one** new component, and nothing else changes.
 
