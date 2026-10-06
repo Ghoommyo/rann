@@ -1,7 +1,9 @@
 [gd_resource type="Resource" script_class="CharacterDef" format=3]
 
+[ext_resource type="AnimationLibrary" path="res://data/characters/kael/animations.res" id="1_1dg0d"]
 [ext_resource type="Script" path="res://core/defs/character_def.gd" id="1_def"]
 [ext_resource type="Script" path="res://core/defs/move_def.gd" id="2_move"]
+[ext_resource type="PackedScene" path="res://assets/characters/kael/model.fbx" id="2_ps8t0"]
 [ext_resource type="Resource" path="res://data/characters/kael/style.tres" id="3_style"]
 [ext_resource type="Resource" path="res://data/characters/kael/moves/jab.tres" id="4_jab"]
 [ext_resource type="Resource" path="res://data/characters/kael/moves/straight.tres" id="5_straight"]
@@ -23,4 +25,6 @@ walk_back_speed = 28
 style = ExtResource("3_style")
 description = "Striker. Straightforward pressure; fills his Rage meter to unleash Rage Burst."
 color = Color(0.95, 0.55, 0.15, 1)
+model_scene = ExtResource("2_ps8t0")
+animation_library = ExtResource("1_1dg0d")
 moves = Array[ExtResource("2_move")]([ExtResource("4_jab"), ExtResource("5_straight"), ExtResource("6_body_kick"), ExtResource("7_low_kick"), ExtResource("8_sweep"), ExtResource("9_uppercut"), ExtResource("10_dash_punch"), ExtResource("11_rage_burst"), ExtResource("12_throw")])

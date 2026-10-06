@@ -29,8 +29,12 @@ func _init() -> void:
 		printerr("No %s folder yet. See plans/07-guide-mixamo-import.md" % ASSETS)
 		quit(1)
 		return
-	for id in DirAccess.get_directories_at(ASSETS):
-		_build_character(id)
+	for folder in DirAccess.get_directories_at(ASSETS):
+		if folder != folder.to_lower():
+			# res:// paths are case-sensitive on Android, iOS and Linux.
+			printerr("%s/%s: rename the folder to lowercase '%s' to match the character id" % [ASSETS, folder, folder.to_lower()])
+			continue
+		_build_character(folder)
 	quit()
 
 

@@ -1,7 +1,9 @@
 [gd_resource type="Resource" script_class="CharacterDef" format=3]
 
 [ext_resource type="Script" path="res://core/defs/character_def.gd" id="1_def"]
+[ext_resource type="AnimationLibrary" path="res://data/characters/mira/animations.res" id="1_etaft"]
 [ext_resource type="Script" path="res://core/defs/move_def.gd" id="2_move"]
+[ext_resource type="PackedScene" path="res://assets/characters/mira/model.fbx" id="2_tqora"]
 [ext_resource type="Resource" path="res://data/characters/mira/style.tres" id="3_style"]
 [ext_resource type="Resource" path="res://data/characters/mira/moves/low_kick.tres" id="4_low_kick"]
 [ext_resource type="Resource" path="res://data/characters/mira/moves/sweep.tres" id="5_sweep"]
@@ -25,4 +27,6 @@ walk_back_speed = 34
 style = ExtResource("3_style")
 description = "Stance dancer. Flows between Tiger and Crane; tap forward to parry."
 color = Color(0.25, 0.8, 0.75, 1)
+model_scene = ExtResource("2_tqora")
+animation_library = ExtResource("1_etaft")
 moves = Array[ExtResource("2_move")]([ExtResource("4_low_kick"), ExtResource("5_sweep"), ExtResource("6_throw"), ExtResource("7_tiger_claw"), ExtResource("8_tiger_slash"), ExtResource("9_tiger_kick"), ExtResource("10_to_crane"), ExtResource("11_crane_peck"), ExtResource("12_crane_wing"), ExtResource("13_crane_rise"), ExtResource("14_to_tiger")])
