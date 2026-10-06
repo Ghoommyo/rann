@@ -1,0 +1,47 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/fight.gd" id="1_fight"]
+[ext_resource type="Resource" path="res://data/characters/dummy/character.tres" id="2_dummy"]
+[ext_resource type="Script" path="res://view/debug/hitbox_overlay.gd" id="3_overlay"]
+
+[sub_resource type="Environment" id="Environment_main"]
+background_mode = 1
+background_color = Color(0.11, 0.12, 0.15, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.55, 0.58, 0.65, 1)
+ambient_light_energy = 0.6
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
+size = Vector2(12, 4)
+
+[sub_resource type="StandardMaterial3D" id="Material_ground"]
+albedo_color = Color(0.3, 0.32, 0.36, 1)
+
+[node name="Fight" type="Node3D"]
+script = ExtResource("1_fight")
+p1_character = ExtResource("2_dummy")
+p2_character = ExtResource("2_dummy")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_main")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.25, 0.433, 0, 0.866, 0.5, -0.5, -0.433, 0.75, 0, 4, 3)
+
+[node name="Camera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 6)
+fov = 50.0
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_ground")
+surface_material_override/0 = SubResource("Material_ground")
+
+[node name="HitboxOverlay" type="MeshInstance3D" parent="."]
+script = ExtResource("3_overlay")
+
+[node name="DebugHUD" type="CanvasLayer" parent="."]
+
+[node name="Info" type="Label" parent="DebugHUD"]
+offset_left = 12.0
+offset_top = 8.0
+theme_override_font_sizes/font_size = 14

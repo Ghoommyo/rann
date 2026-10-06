@@ -1,0 +1,9 @@
+# Godot's import cache and editor state (regenerated automatically)
+.godot/
+*.import.tmp
+# Export output
+build/
+*.apk
+*.aab
+# OS junk
+.DS_Store

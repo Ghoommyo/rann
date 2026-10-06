@@ -1,0 +1,2 @@
+# Normalize line endings so Godot files diff cleanly across OSes
+* text=auto eol=lf
