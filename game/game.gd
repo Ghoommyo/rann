@@ -10,7 +10,7 @@ extends Node
 enum Mode { VERSUS_CPU, LOCAL_VERSUS, TRAINING, ONLINE }
 
 ## Bump when gameplay changes. Online players must have the same version.
-const GAME_VERSION := "0.4.0"
+const GAME_VERSION := "0.5.0"
 
 const MAIN_MENU := "res://ui/menus/main_menu.tscn"
 const CHARACTER_SELECT := "res://ui/menus/character_select.tscn"

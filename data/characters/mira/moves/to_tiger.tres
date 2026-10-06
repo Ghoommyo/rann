@@ -7,6 +7,7 @@ script = ExtResource("1_move")
 id = "to_tiger"
 display_name = "Tiger Stance"
 animation_name = "to_tiger"
+simple_command = "SP"
 command = "LK+RK"
 startup = 1
 active = 0

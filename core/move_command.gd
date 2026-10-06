@@ -20,6 +20,7 @@ const MOTION_WINDOW := 12
 
 const BUTTON_NAMES := {
 	"LP": InputFrame.LP, "RP": InputFrame.RP, "LK": InputFrame.LK, "RK": InputFrame.RK,
+	"SP": InputFrame.SP,
 }
 
 var motion := PackedInt32Array()

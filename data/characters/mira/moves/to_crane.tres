@@ -7,6 +7,7 @@ script = ExtResource("1_move")
 id = "to_crane"
 display_name = "Crane Stance"
 animation_name = "to_crane"
+simple_command = "SP"
 command = "LK+RK"
 startup = 1
 active = 0

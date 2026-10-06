@@ -98,14 +98,36 @@ static func _free_intent(f: FighterState, def: CharacterDef, dir: int) -> void:
 
 
 ## Starts the first move in `candidates` whose command was just entered.
+## Classic commands are checked first, then simple (SP button) commands, each
+## in their own priority order. They can't clash: only simple commands use SP.
 static func _try_start_move(f: FighterState, def: CharacterDef, candidates: Array[int]) -> bool:
 	var style := def.get_style()
 	for index in candidates:
-		if not style.can_use_move(f, def.moves[index]):
+		var move := def.moves[index]
+		if not style.can_use_move(f, move):
 			continue  # wrong stance, not enough meter, …
-		var press := def.moves[index].get_command().find_press(f.input, f.facing, f.last_press_time)
+		var press := move.get_command().find_press(f.input, f.facing, f.last_press_time)
 		if press >= 0:
 			start_move(f, def, index, press)
+			return true
+	if not _sp_in_buffer(f):
+		return false  # quick exit: SP wasn't pressed recently
+	for index in def.simple_moves_by_priority():
+		if not index in candidates:
+			continue
+		var move := def.moves[index]
+		if not style.can_use_move(f, move):
+			continue
+		var press := move.get_simple_command().find_press(f.input, f.facing, f.last_press_time)
+		if press >= 0:
+			start_move(f, def, index, press)
+			return true
+	return false
+
+
+static func _sp_in_buffer(f: FighterState) -> bool:
+	for ago in MoveCommand.BUFFER_WINDOW:
+		if InputFrame.has(f.input.get_ago(ago), InputFrame.SP):
 			return true
 	return false
 

@@ -16,9 +16,11 @@ const LP := 1 << 4  # left punch
 const RP := 1 << 5  # right punch
 const LK := 1 << 6  # left kick
 const RK := 1 << 7  # right kick
+## "Special" button for simple controls (MoveDef.simple_command), mainly for touch screens.
+const SP := 1 << 8
 
 const DIRECTIONS := UP | DOWN | LEFT | RIGHT
-const BUTTONS := LP | RP | LK | RK
+const BUTTONS := LP | RP | LK | RK | SP
 
 
 ## Builds an input int from held directions/buttons.
@@ -26,7 +28,7 @@ const BUTTONS := LP | RP | LK | RK
 ## left+right = neutral and up+down = neutral. This blocks a classic exploit
 ## on keyboards and touch screens.
 static func pack(up: bool, down: bool, left: bool, right: bool,
-		lp := false, rp := false, lk := false, rk := false) -> int:
+		lp := false, rp := false, lk := false, rk := false, sp := false) -> int:
 	var bits := 0
 	if up != down:
 		bits |= UP if up else DOWN
@@ -36,6 +38,7 @@ static func pack(up: bool, down: bool, left: bool, right: bool,
 	if rp: bits |= RP
 	if lk: bits |= LK
 	if rk: bits |= RK
+	if sp: bits |= SP
 	return bits
 
 

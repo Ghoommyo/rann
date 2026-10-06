@@ -28,6 +28,7 @@ func _ready() -> void:
 	column.add_child(MenuStyle.button("Local Versus", func(): Game.go_to_character_select(Game.Mode.LOCAL_VERSUS)))
 	column.add_child(MenuStyle.button("Training", func(): Game.go_to_character_select(Game.Mode.TRAINING)))
 	column.add_child(MenuStyle.button("Online", func(): Game.go_to_character_select(Game.Mode.ONLINE)))
+	column.add_child(MenuStyle.button("Settings", func(): get_tree().change_scene_to_file("res://ui/menus/settings_menu.tscn")))
 	if not OS.has_feature("mobile") and not OS.has_feature("web"):
 		column.add_child(MenuStyle.button("Quit", func(): get_tree().quit()))
 

@@ -7,6 +7,7 @@ script = ExtResource("1_move")
 id = "uppercut"
 display_name = "Uppercut"
 animation_name = "uppercut"
+simple_command = "6+SP"
 command = "3+RP"
 startup = 15
 active = 3

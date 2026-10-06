@@ -100,7 +100,7 @@ func _physics_process(_delta: float) -> void:
 	_prev_state = _state.copy()
 
 	# Touch controls play as P1, together with P1's keyboard/gamepad.
-	var p1 := InputRouter.read(1) | _touch.get_bits()
+	var p1 := InputRouter.read(1) | _touch.get_bits(_state.fighters[0].facing)
 	var p2 := 0
 	match Game.mode:
 		Game.Mode.VERSUS_CPU:
@@ -121,7 +121,8 @@ func _online_tick() -> void:
 	if _opponent_gone or _session == null:
 		return
 	_prev_state = _session.state.copy()
-	var local := InputRouter.read(1) | _touch.get_bits()  # you always use the P1 controls
+	var me := _session.state.fighters[_session.local_player]
+	var local := InputRouter.read(1) | _touch.get_bits(me.facing)  # you always use the P1 controls
 	if _bot:
 		local = _bot.next_input(_session.state, _defs, _session.local_player)
 	_session.tick(local)
@@ -195,8 +196,10 @@ func _process(delta: float) -> void:
 		match event.type:
 			Event.HIT:
 				_camera.shake(clampf(event.amount / 150.0, 0.2, 1.0))
+				Settings.vibrate(25 if event.amount < 100 else 45)
 			Event.KO:
 				_camera.shake(1.4)
+				Settings.vibrate(120)
 	_pending_events.clear()
 
 
@@ -251,7 +254,9 @@ func _update_dummy_text() -> void:
 
 func _debug_lines() -> PackedStringArray:
 	var lines := PackedStringArray()
-	lines.append("frame %d   checksum %08x" % [_state.frame, _state.checksum()])
+	lines.append("%d fps (%.1f ms)   frame %d   checksum %08x" % [
+		Engine.get_frames_per_second(), Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0,
+		_state.frame, _state.checksum()])
 	for i in 2:
 		var f := _state.fighters[i]
 		var move := ""

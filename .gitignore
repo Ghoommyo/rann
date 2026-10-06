@@ -7,3 +7,10 @@ build/
 *.aab
 # OS junk
 .DS_Store
+# Android build template (reinstalled by tools/build_mobile.sh)
+android/
+# Signing keys and credentials must never be committed
+*.keystore
+*.jks
+*.p12
+*.mobileprovision

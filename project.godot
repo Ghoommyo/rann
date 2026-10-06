@@ -9,10 +9,14 @@ config/name="Rann"
 config/description="2.5D fighting game"
 run/main_scene="res://ui/menus/main_menu.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
+config/version="0.5.0"
+config/icon="res://icon.svg"
+boot_splash/bg_color=Color(0.08, 0.06, 0.14, 1)
 
 [autoload]
 
 ; Global game flow (mode, chosen characters, scene changes).
+Settings="*res://game/settings.gd"
 Game="*res://game/game.gd"
 
 [display]
@@ -20,7 +24,10 @@ Game="*res://game/game.gd"
 window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
-window/handheld/orientation=0
+; Wide phones (20:9) show more of the stage instead of black bars.
+window/stretch/aspect="expand"
+; 4 = sensor landscape: landscape, flips when the phone is turned around.
+window/handheld/orientation=4
 
 [editor_plugins]
 
@@ -42,3 +49,5 @@ common/physics_jitter_fix=0.0
 [rendering]
 
 renderer/rendering_method="mobile"
+; Android and iOS need ETC2/ASTC compressed textures.
+textures/vram_compression/import_etc2_astc=true

@@ -38,6 +38,10 @@ enum OnHit { NONE, LAUNCH, KNOCKDOWN }
 ## Input that performs the move, in numpad notation (see plans/02-phase-combat-system.md).
 ## Examples: "LP", "2+LK", "3+RP", "236+RP", "LP+LK".
 @export var command := "LP"
+## Optional easy input using the Special button, e.g. "SP", "6+SP", "2+SP".
+## 💡 Simple controls make special moves possible on a touch screen without
+## motion inputs. Any character gets them just by filling this in.
+@export var simple_command := ""
 ## The attacker counts as crouching during this move, so high attacks whiff over them.
 @export var low_profile := false
 
@@ -93,6 +97,7 @@ enum OnHit { NONE, LAUNCH, KNOCKDOWN }
 @export var throw_duration := 40
 
 var _command: MoveCommand
+var _simple: MoveCommand
 
 
 func total_frames() -> int:
@@ -123,3 +128,10 @@ func get_command() -> MoveCommand:
 	if _command == null:
 		_command = MoveCommand.parse(command)
 	return _command
+
+
+## The parsed `simple_command`, or null if the move has none.
+func get_simple_command() -> MoveCommand:
+	if _simple == null and simple_command != "":
+		_simple = MoveCommand.parse(simple_command)
+	return _simple

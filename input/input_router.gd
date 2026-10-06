@@ -11,11 +11,11 @@ class_name InputRouter
 const KEYBOARD := {
 	1: {
 		"up": KEY_W, "down": KEY_S, "left": KEY_A, "right": KEY_D,
-		"lp": KEY_U, "rp": KEY_I, "lk": KEY_J, "rk": KEY_K,
+		"lp": KEY_U, "rp": KEY_I, "lk": KEY_J, "rk": KEY_K, "sp": KEY_L,
 	},
 	2: {
 		"up": KEY_UP, "down": KEY_DOWN, "left": KEY_LEFT, "right": KEY_RIGHT,
-		"lp": KEY_KP_4, "rp": KEY_KP_5, "lk": KEY_KP_1, "rk": KEY_KP_2,
+		"lp": KEY_KP_4, "rp": KEY_KP_5, "lk": KEY_KP_1, "rk": KEY_KP_2, "sp": KEY_KP_6,
 	},
 }
 
@@ -25,6 +25,7 @@ const GAMEPAD_BUTTONS := {
 	"up": JOY_BUTTON_DPAD_UP, "down": JOY_BUTTON_DPAD_DOWN,
 	"left": JOY_BUTTON_DPAD_LEFT, "right": JOY_BUTTON_DPAD_RIGHT,
 	"lp": JOY_BUTTON_X, "rp": JOY_BUTTON_Y, "lk": JOY_BUTTON_A, "rk": JOY_BUTTON_B,
+	"sp": JOY_BUTTON_RIGHT_SHOULDER,
 }
 
 ## Left stick directions: [axis, sign].
@@ -77,6 +78,7 @@ static func read(player: int) -> int:
 		Input.is_action_pressed(_action(player, "rp")),
 		Input.is_action_pressed(_action(player, "lk")),
 		Input.is_action_pressed(_action(player, "rk")),
+		Input.is_action_pressed(_action(player, "sp")),
 	)
 
 

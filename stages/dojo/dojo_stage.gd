@@ -44,9 +44,10 @@ func _add_environment() -> void:
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
 	env.ambient_light_energy = 0.7
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	env.glow_enabled = true
+	# Glow and fog cost GPU time: only on Medium and High quality.
+	env.glow_enabled = Settings.quality != Settings.Quality.LOW
 	env.glow_intensity = 0.6
-	env.fog_enabled = true
+	env.fog_enabled = Settings.quality != Settings.Quality.LOW
 	env.fog_light_color = Color(0.6, 0.4, 0.35)
 	env.fog_density = 0.008
 	env.fog_sky_affect = 0.0  # keep the sunset gradient visible
@@ -60,7 +61,7 @@ func _add_sun() -> void:
 	var sun := DirectionalLight3D.new()
 	sun.light_color = Color(1.0, 0.8, 0.6)
 	sun.light_energy = 1.1
-	sun.shadow_enabled = true
+	sun.shadow_enabled = Settings.quality != Settings.Quality.LOW  # shadows are the most expensive effect
 	sun.rotation_degrees = Vector3(-35, 30, 0)
 	add_child(sun)
 
@@ -103,6 +104,8 @@ func _add_lanterns() -> void:
 		mat.emission_enabled = true
 		mat.emission = LANTERN
 		mat.emission_energy_multiplier = 2.5
+		if Settings.quality == Settings.Quality.LOW:
+			continue  # emissive lanterns still glow; skip their extra lights
 		var light := OmniLight3D.new()
 		light.light_color = LANTERN
 		light.light_energy = 1.2

@@ -73,6 +73,8 @@ static var _no_style := FightStyle.new()
 
 # Caches built on first use (not saved to the .tres file).
 var _priority_order: Array[int] = []
+var _simple_order: Array[int] = []
+var _simple_built := false
 var _cancel_cache := {}
 
 
@@ -85,6 +87,24 @@ func moves_by_priority() -> Array[int]:
 	if _priority_order.size() != moves.size():
 		_priority_order = _sorted_by_priority(range(moves.size()))
 	return _priority_order
+
+
+## Indices of moves with a simple_command, most specific simple command first.
+## 💡 Simple commands get their own ranking: "6+SP" must beat "SP" even when the
+## "SP" move has a complicated classic input like 236+RP.
+func simple_moves_by_priority() -> Array[int]:
+	if not _simple_built:
+		_simple_built = true
+		var with_simple: Array[int] = []
+		for i in moves.size():
+			if moves[i].get_simple_command():
+				with_simple.append(i)
+		with_simple.sort_custom(func(a: int, b: int) -> bool:
+			var pa := moves[a].get_simple_command().priority
+			var pb := moves[b].get_simple_command().priority
+			return pa > pb or (pa == pb and a < b))
+		_simple_order = with_simple
+	return _simple_order
 
 
 ## Indices of the moves that `moves[index]` can cancel into, most specific first.

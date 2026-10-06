@@ -7,6 +7,7 @@ script = ExtResource("1_move")
 id = "crane_rise"
 display_name = "Rising Crane"
 animation_name = "crane_rise"
+simple_command = "6+SP"
 command = "RK"
 startup = 15
 active = 3
