@@ -27,6 +27,11 @@ Training: `F6` change dummy behaviour · `F7` record / stop (then the dummy play
 
 3D models: see [plans/07-guide-mixamo-import.md](plans/07-guide-mixamo-import.md). Until you add them, fighters are capsules.
 
+## Online
+Main menu → **Online** → pick your fighter → **Host** or **Join** with the host's IP address (port 7777, UDP).
+Same Wi-Fi works right away. Over the internet, the host forwards UDP 7777 on their router.
+Uses rollback netcode; see [plans/04-phase-online-multiplayer.md](plans/04-phase-online-multiplayer.md).
+
 ## Test
 ```bash
 godot --headless --path . -s addons/gut/gut_cmdln.gd
