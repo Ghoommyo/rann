@@ -3,23 +3,56 @@
 ## 💡 Fighting games don't use realistic physics. Each fighter has a few
 ## invisible boxes:
 ##  - pushbox: stops fighters walking through each other (Phase 1)
-##  - hurtbox: where the fighter can be hit (Phase 2)
-##  - hitbox:  the damaging part of an attack (Phase 2)
+##  - hurtbox: where the fighter can be hit
+##  - hitbox:  the damaging part of an attack (defined in MoveDef)
 ##
 ## Boxes are in sim units. x grows to the right, y grows upwards, and
 ## Rect2i.position is the bottom-left corner.
 class_name Collision
 
 
+## True when the fighter is low to the ground: crouching, crouch-blocking,
+## doing a low-profile move, or lying down. High attacks whiff over them.
+static func is_low_posture(f: FighterState, def: CharacterDef) -> bool:
+	match f.state:
+		FighterState.State.CROUCH, FighterState.State.KNOCKDOWN, FighterState.State.WAKEUP:
+			return true
+		FighterState.State.BLOCKSTUN:
+			return f.crouch_guard
+		FighterState.State.ATTACK:
+			return def.moves[f.move_index].low_profile
+	return false
+
+
+## Body height for the current posture.
+static func body_height(f: FighterState, def: CharacterDef) -> int:
+	if f.is_airborne():
+		return def.air_height
+	if is_low_posture(f, def):
+		return def.crouch_height
+	return def.stand_height
+
+
 ## The fighter's pushbox for its current state (shorter when crouching or jumping).
 static func pushbox_of(f: FighterState, def: CharacterDef) -> Rect2i:
-	var height := def.stand_height
-	if f.state == FighterState.State.CROUCH:
-		height = def.crouch_height
-	elif f.is_airborne():
-		height = def.air_height
 	var half := def.pushbox_half_width
-	return Rect2i(f.pos_x - half, f.pos_y, half * 2, height)
+	return Rect2i(f.pos_x - half, f.pos_y, half * 2, body_height(f, def))
+
+
+## False while the fighter can't be hit at all (lying down, getting up, in a throw).
+## 💡 Frames where a fighter can't be hit are called "invincibility frames".
+static func has_hurtbox(f: FighterState) -> bool:
+	match f.state:
+		FighterState.State.KNOCKDOWN, FighterState.State.WAKEUP, \
+		FighterState.State.THROWING, FighterState.State.THROWN:
+			return false
+	return true
+
+
+## Where the fighter can be hit. Only meaningful when has_hurtbox() is true.
+static func hurtbox_of(f: FighterState, def: CharacterDef) -> Rect2i:
+	var half := def.hurtbox_half_width
+	return Rect2i(f.pos_x - half, f.pos_y, half * 2, body_height(f, def))
 
 
 ## How far two boxes overlap horizontally (0 if they don't touch).

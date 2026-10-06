@@ -1,12 +1,17 @@
 ## Debug drawing of collision boxes, toggled with F1.
 ##
 ## 💡 Seeing the invisible boxes is the main way to debug and balance a
-## fighting game. Phase 1 draws pushboxes (yellow). Phase 2 adds hurtboxes
-## (green) and hitboxes (red).
+## fighting game:
+##  - yellow = pushbox (body collision)
+##  - green  = hurtbox (where you can be hit; missing while invincible)
+##  - red    = hitbox (only drawn on the attack's active frames)
 class_name HitboxOverlay
 extends MeshInstance3D
 
 const PUSHBOX_COLOR := Color(1.0, 0.85, 0.1)
+const HURTBOX_COLOR := Color(0.2, 1.0, 0.3)
+const HITBOX_COLOR := Color(1.0, 0.15, 0.15)
+const THROWBOX_COLOR := Color(0.8, 0.3, 1.0)
 
 var _lines := ImmediateMesh.new()
 
@@ -27,7 +32,16 @@ func draw_state(state: FightState, defs: Array[CharacterDef]) -> void:
 		return
 	_lines.surface_begin(Mesh.PRIMITIVE_LINES)
 	for i in state.fighters.size():
-		_add_rect(Collision.pushbox_of(state.fighters[i], defs[i]), PUSHBOX_COLOR)
+		var f := state.fighters[i]
+		var def := defs[i]
+		_add_rect(Collision.pushbox_of(f, def), PUSHBOX_COLOR)
+		if Collision.has_hurtbox(f):
+			_add_rect(Collision.hurtbox_of(f, def), HURTBOX_COLOR)
+		if f.state == FighterState.State.ATTACK:
+			var move := def.moves[f.move_index]
+			if move.is_active_frame(f.state_frame + 1):
+				var color := THROWBOX_COLOR if move.hit_level == MoveDef.HitLevel.THROW else HITBOX_COLOR
+				_add_rect(move.hitbox_of(f), color)
 	_lines.surface_end()
 
 

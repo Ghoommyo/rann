@@ -12,6 +12,8 @@ const SIZE := 30  # half a second at 60 fps
 
 var _frames := PackedInt32Array()
 var _head := 0  # index of the most recent frame in _frames
+## How many frames have been pushed in total. Used as a timestamp for presses.
+var frame_count := 0
 
 
 func _init() -> void:
@@ -22,6 +24,7 @@ func _init() -> void:
 func push(bits: int) -> void:
 	_head = (_head + 1) % SIZE
 	_frames[_head] = bits
+	frame_count += 1
 
 
 ## Input from `frames_ago` frames back. 0 = this frame.
@@ -43,10 +46,12 @@ func copy() -> InputBuffer:
 	var c := InputBuffer.new()
 	c._frames = _frames.duplicate()
 	c._head = _head
+	c.frame_count = frame_count
 	return c
 
 
 func mix_checksum(h: int) -> int:
+	h = FixedMath.hash_mix(h, frame_count)
 	# Hash in time order (oldest → newest) so the ring-buffer position doesn't matter.
 	for i in range(SIZE - 1, -1, -1):
 		h = FixedMath.hash_mix(h, get_ago(i))

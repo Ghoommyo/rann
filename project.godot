@@ -21,6 +21,11 @@ window/handheld/orientation=0
 
 enabled=PackedStringArray("res://addons/gut/plugin.cfg")
 
+[input_devices]
+
+; Lets the mouse act as a finger, to test touch controls on desktop (F2 shows them).
+pointing/emulate_touch_from_mouse=true
+
 [physics]
 
 ; The fight simulation runs exactly 60 ticks per second (plans/00-architecture.md, Rule 2).

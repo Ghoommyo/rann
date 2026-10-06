@@ -3,7 +3,7 @@
 ## the results match exactly.
 extends GutTest
 
-const FRAMES := 1000
+const FRAMES := 3000  # long enough for KOs and round changes
 
 
 ## Makes a reproducible sequence of random input pairs. Each input is held
@@ -22,7 +22,7 @@ func _random_inputs(seed_value: int) -> Array:
 
 
 func _play(inputs: Array) -> FightState:
-	var defs := TestHelpers.default_defs()
+	var defs := TestHelpers.dummy_defs()
 	var state := FightState.create(defs)
 	for pair in inputs:
 		MatchSim.step(state, defs, pair[0], pair[1])
@@ -45,7 +45,7 @@ func test_different_inputs_different_result():
 func test_copy_then_continue_matches_original():
 	# Simulates what rollback does: snapshot mid-fight, keep playing from the copy.
 	var inputs := _random_inputs(7)
-	var defs := TestHelpers.default_defs()
+	var defs := TestHelpers.dummy_defs()
 	var original := FightState.create(defs)
 	var snapshot: FightState
 	for i in FRAMES:
@@ -58,7 +58,7 @@ func test_copy_then_continue_matches_original():
 
 
 func test_checksum_covers_style_data():
-	var defs := TestHelpers.default_defs()
+	var defs := TestHelpers.dummy_defs()
 	var a := FightState.create(defs)
 	var b := a.copy()
 	assert_eq(a.checksum(), b.checksum())
