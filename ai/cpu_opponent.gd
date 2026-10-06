@@ -62,7 +62,7 @@ var _juggle_decided_for := -1
 var _break_decided_for := -1
 
 
-func _init(level := Level.NORMAL, seed_value := 1) -> void:
+func _init(level: int = Level.NORMAL, seed_value := 1) -> void:
 	var preset: Dictionary = PRESETS[level]
 	for key in preset:
 		set(key, preset[key])

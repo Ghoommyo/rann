@@ -7,8 +7,13 @@ config_version=5
 
 config/name="Rann"
 config/description="2.5D fighting game"
-run/main_scene="res://scenes/fight.tscn"
+run/main_scene="res://ui/menus/main_menu.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
+
+[autoload]
+
+; Global game flow (mode, chosen characters, scene changes).
+Game="*res://game/game.gd"
 
 [display]
 
