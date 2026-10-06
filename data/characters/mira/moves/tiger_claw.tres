@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="MoveDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+id = "tiger_claw"
+display_name = "Tiger Claw"
+animation_name = "tiger_claw"
+command = "LP"
+startup = 10
+active = 2
+recovery = 14
+hitbox_offset_x = 250
+hitbox_offset_y = 1300
+hitbox_width = 500
+hitbox_height = 250
+hit_level = 0
+damage = 45
+hitstun = 22
+blockstun = 16
+pushback = 24
+hitstop = 6
+cancels_into = Array[String](["tiger_slash"])
+required_stance = "tiger"

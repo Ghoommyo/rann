@@ -43,6 +43,7 @@ enum OnHit { NONE, LAUNCH, KNOCKDOWN }
 
 @export_group("Frame data")
 @export var startup := 10
+## 0 = no hitbox at all (e.g. a stance change).
 @export var active := 2
 @export var recovery := 14
 
@@ -74,6 +75,16 @@ enum OnHit { NONE, LAUNCH, KNOCKDOWN }
 ## Move ids this move can be cancelled into once it has hit or been blocked.
 ## 💡 This is how strings and combos are made: jab → straight.
 @export var cancels_into: Array[String] = []
+
+@export_group("Fight style")
+## Meter spent to do this move (used by MeterComponent).
+@export var meter_cost := 0
+## Only usable in this stance; "" = any stance (used by StanceComponent).
+@export var required_stance := ""
+## Starting this move switches to this stance (used by StanceComponent).
+@export var enters_stance := ""
+## Needs a charged input first (used by ChargeInputComponent).
+@export var requires_charge := false
 
 @export_group("Throw")
 ## Button that breaks this throw (only used when hit_level is THROW).

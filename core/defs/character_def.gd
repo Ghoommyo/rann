@@ -44,14 +44,37 @@ extends Resource
 ## like in Tekken.
 @export var air_height := 1200
 
+@export_group("Fight style")
+## The character's unique mechanics (stances, meter, parry, …). Optional.
+@export var style: FightStyle
+## One line shown on character select.
+@export_multiline var description := ""
+
+@export_group("Look")
+## Placeholder capsule color, also used for HUD accents.
+@export var color := Color(0.6, 0.6, 0.6)
+## Optional 3D model scene with an AnimationPlayer (see plans/07-guide-mixamo-import.md).
+## Without one, a capsule is drawn.
+@export var model_scene: PackedScene
+## Uniform scale applied to the model.
+@export var model_scale := 1.0
+@export var portrait: Texture2D
+
 @export_group("Moves")
 ## Every attack this character has. Order doesn't matter: the input parser
 ## checks the most complex commands first (see MoveCommand.priority).
 @export var moves: Array[MoveDef] = []
 
+## Used when a character has no style, so callers never need a null check.
+static var _no_style := FightStyle.new()
+
 # Caches built on first use (not saved to the .tres file).
 var _priority_order: Array[int] = []
 var _cancel_cache := {}
+
+
+func get_style() -> FightStyle:
+	return style if style else _no_style
 
 
 ## Indices into `moves`, most specific command first.

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CharacterDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/character_def.gd" id="1_def"]
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="2_move"]
+[ext_resource type="Resource" path="res://tests/fixtures/dummy/moves/jab.tres" id="3_jab"]
+[ext_resource type="Resource" path="res://tests/fixtures/dummy/moves/straight.tres" id="4_straight"]
+[ext_resource type="Resource" path="res://tests/fixtures/dummy/moves/mid_kick.tres" id="5_mid_kick"]
+[ext_resource type="Resource" path="res://tests/fixtures/dummy/moves/low_kick.tres" id="6_low_kick"]
+[ext_resource type="Resource" path="res://tests/fixtures/dummy/moves/sweep.tres" id="7_sweep"]
+[ext_resource type="Resource" path="res://tests/fixtures/dummy/moves/launcher.tres" id="8_launcher"]
+[ext_resource type="Resource" path="res://tests/fixtures/dummy/moves/dash_punch.tres" id="9_dash_punch"]
+[ext_resource type="Resource" path="res://tests/fixtures/dummy/moves/throw.tres" id="10_throw"]
+
+[resource]
+script = ExtResource("1_def")
+id = "dummy"
+display_name = "Dummy"
+moves = Array[ExtResource("2_move")]([ExtResource("3_jab"), ExtResource("4_straight"), ExtResource("5_mid_kick"), ExtResource("6_low_kick"), ExtResource("7_sweep"), ExtResource("8_launcher"), ExtResource("9_dash_punch"), ExtResource("10_throw")])

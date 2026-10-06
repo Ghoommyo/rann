@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="CharacterDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/character_def.gd" id="1_def"]
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="2_move"]
+[ext_resource type="Resource" path="res://data/characters/kael/style.tres" id="3_style"]
+[ext_resource type="Resource" path="res://data/characters/kael/moves/jab.tres" id="4_jab"]
+[ext_resource type="Resource" path="res://data/characters/kael/moves/straight.tres" id="5_straight"]
+[ext_resource type="Resource" path="res://data/characters/kael/moves/body_kick.tres" id="6_body_kick"]
+[ext_resource type="Resource" path="res://data/characters/kael/moves/low_kick.tres" id="7_low_kick"]
+[ext_resource type="Resource" path="res://data/characters/kael/moves/sweep.tres" id="8_sweep"]
+[ext_resource type="Resource" path="res://data/characters/kael/moves/uppercut.tres" id="9_uppercut"]
+[ext_resource type="Resource" path="res://data/characters/kael/moves/dash_punch.tres" id="10_dash_punch"]
+[ext_resource type="Resource" path="res://data/characters/kael/moves/rage_burst.tres" id="11_rage_burst"]
+[ext_resource type="Resource" path="res://data/characters/kael/moves/throw.tres" id="12_throw"]
+
+[resource]
+script = ExtResource("1_def")
+id = "kael"
+display_name = "Kael"
+max_health = 1050
+walk_forward_speed = 38
+walk_back_speed = 28
+style = ExtResource("3_style")
+description = "Striker. Straightforward pressure; fills his Rage meter to unleash Rage Burst."
+color = Color(0.95, 0.55, 0.15, 1)
+moves = Array[ExtResource("2_move")]([ExtResource("4_jab"), ExtResource("5_straight"), ExtResource("6_body_kick"), ExtResource("7_low_kick"), ExtResource("8_sweep"), ExtResource("9_uppercut"), ExtResource("10_dash_punch"), ExtResource("11_rage_burst"), ExtResource("12_throw")])

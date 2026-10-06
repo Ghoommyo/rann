@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="CharacterDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/character_def.gd" id="1_def"]
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="2_move"]
+[ext_resource type="Resource" path="res://data/characters/mira/style.tres" id="3_style"]
+[ext_resource type="Resource" path="res://data/characters/mira/moves/low_kick.tres" id="4_low_kick"]
+[ext_resource type="Resource" path="res://data/characters/mira/moves/sweep.tres" id="5_sweep"]
+[ext_resource type="Resource" path="res://data/characters/mira/moves/throw.tres" id="6_throw"]
+[ext_resource type="Resource" path="res://data/characters/mira/moves/tiger_claw.tres" id="7_tiger_claw"]
+[ext_resource type="Resource" path="res://data/characters/mira/moves/tiger_slash.tres" id="8_tiger_slash"]
+[ext_resource type="Resource" path="res://data/characters/mira/moves/tiger_kick.tres" id="9_tiger_kick"]
+[ext_resource type="Resource" path="res://data/characters/mira/moves/to_crane.tres" id="10_to_crane"]
+[ext_resource type="Resource" path="res://data/characters/mira/moves/crane_peck.tres" id="11_crane_peck"]
+[ext_resource type="Resource" path="res://data/characters/mira/moves/crane_wing.tres" id="12_crane_wing"]
+[ext_resource type="Resource" path="res://data/characters/mira/moves/crane_rise.tres" id="13_crane_rise"]
+[ext_resource type="Resource" path="res://data/characters/mira/moves/to_tiger.tres" id="14_to_tiger"]
+
+[resource]
+script = ExtResource("1_def")
+id = "mira"
+display_name = "Mira"
+max_health = 950
+walk_forward_speed = 45
+walk_back_speed = 34
+style = ExtResource("3_style")
+description = "Stance dancer. Flows between Tiger and Crane; tap forward to parry."
+color = Color(0.25, 0.8, 0.75, 1)
+moves = Array[ExtResource("2_move")]([ExtResource("4_low_kick"), ExtResource("5_sweep"), ExtResource("6_throw"), ExtResource("7_tiger_claw"), ExtResource("8_tiger_slash"), ExtResource("9_tiger_kick"), ExtResource("10_to_crane"), ExtResource("11_crane_peck"), ExtResource("12_crane_wing"), ExtResource("13_crane_rise"), ExtResource("14_to_tiger")])

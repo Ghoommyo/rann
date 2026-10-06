@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="MoveDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+id = "tiger_kick"
+display_name = "Tiger Kick"
+animation_name = "tiger_kick"
+command = "RK"
+startup = 14
+active = 3
+recovery = 21
+hitbox_offset_x = 250
+hitbox_offset_y = 700
+hitbox_width = 700
+hitbox_height = 400
+hit_level = 1
+damage = 85
+hitstun = 26
+blockstun = 15
+pushback = 40
+hitstop = 10
+required_stance = "tiger"

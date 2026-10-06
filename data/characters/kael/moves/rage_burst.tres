@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="MoveDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+id = "rage_burst"
+display_name = "Rage Burst"
+animation_name = "rage_burst"
+command = "236+LP+RP"
+startup = 9
+active = 4
+recovery = 32
+hitbox_offset_x = 250
+hitbox_offset_y = 900
+hitbox_width = 750
+hitbox_height = 700
+hit_level = 1
+damage = 220
+hitstun = 40
+blockstun = 20
+pushback = 60
+hitstop = 22
+on_hit = 2
+forward_speed = 55
+meter_cost = 1000

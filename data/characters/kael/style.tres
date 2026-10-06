@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="FightStyle" format=3]
+
+[ext_resource type="Script" path="res://core/defs/fight_style.gd" id="1_style"]
+[ext_resource type="Script" path="res://core/style/style_component.gd" id="2_base"]
+[ext_resource type="Script" path="res://core/style/meter_component.gd" id="3_meter"]
+
+[sub_resource type="Resource" id="meter"]
+script = ExtResource("3_meter")
+display_name = "RAGE"
+max_value = 1000
+gain_on_hit = 70
+gain_on_block = 25
+gain_on_damage_taken = 50
+
+[resource]
+script = ExtResource("1_style")
+components = Array[ExtResource("2_base")]([SubResource("meter")])

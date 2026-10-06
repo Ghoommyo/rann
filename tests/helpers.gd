@@ -1,7 +1,7 @@
 ## Shared helpers for tests: build a match without any scene or views.
 class_name TestHelpers
 
-const DUMMY_PATH := "res://data/characters/dummy/character.tres"
+const DUMMY_PATH := "res://tests/fixtures/dummy/character.tres"
 
 # Inputs written from P1's point of view (P1 starts on the left, facing right).
 const NONE := 0

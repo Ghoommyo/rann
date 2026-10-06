@@ -13,6 +13,7 @@ const State := FighterState.State
 ## Step 1 of a tick: read input and choose the state and velocity.
 static func update_intent(f: FighterState, def: CharacterDef) -> void:
 	var dir := InputFrame.to_numpad(f.input.latest(), f.facing)
+	def.get_style().on_tick(f)
 
 	match f.state:
 		State.IDLE, State.WALK_FORWARD, State.WALK_BACK, State.CROUCH:
@@ -85,6 +86,7 @@ static func start_move(f: FighterState, def: CharacterDef, index: int, press_tim
 	f.last_press_time = press_time
 	f.vel_x = def.moves[index].forward_speed * f.facing
 	f.vel_y = 0
+	def.get_style().on_move_started(f, def.moves[index])
 
 
 ## The fighter is free to act: try an attack first, otherwise move.
@@ -97,7 +99,10 @@ static func _free_intent(f: FighterState, def: CharacterDef, dir: int) -> void:
 
 ## Starts the first move in `candidates` whose command was just entered.
 static func _try_start_move(f: FighterState, def: CharacterDef, candidates: Array[int]) -> bool:
+	var style := def.get_style()
 	for index in candidates:
+		if not style.can_use_move(f, def.moves[index]):
+			continue  # wrong stance, not enough meter, …
 		var press := def.moves[index].get_command().find_press(f.input, f.facing, f.last_press_time)
 		if press >= 0:
 			start_move(f, def, index, press)

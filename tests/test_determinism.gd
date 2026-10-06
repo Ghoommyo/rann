@@ -21,8 +21,14 @@ func _random_inputs(seed_value: int) -> Array:
 	return inputs
 
 
+## Kael vs Mira: exercises every style component.
+func _roster() -> Array[CharacterDef]:
+	var defs: Array[CharacterDef] = [CharacterRegistry.get_def("kael"), CharacterRegistry.get_def("mira")]
+	return defs
+
+
 func _play(inputs: Array) -> FightState:
-	var defs := TestHelpers.dummy_defs()
+	var defs := _roster()
 	var state := FightState.create(defs)
 	for pair in inputs:
 		MatchSim.step(state, defs, pair[0], pair[1])
@@ -45,7 +51,7 @@ func test_different_inputs_different_result():
 func test_copy_then_continue_matches_original():
 	# Simulates what rollback does: snapshot mid-fight, keep playing from the copy.
 	var inputs := _random_inputs(7)
-	var defs := TestHelpers.dummy_defs()
+	var defs := _roster()
 	var original := FightState.create(defs)
 	var snapshot: FightState
 	for i in FRAMES:
@@ -58,7 +64,7 @@ func test_copy_then_continue_matches_original():
 
 
 func test_checksum_covers_style_data():
-	var defs := TestHelpers.dummy_defs()
+	var defs := _roster()
 	var a := FightState.create(defs)
 	var b := a.copy()
 	assert_eq(a.checksum(), b.checksum())

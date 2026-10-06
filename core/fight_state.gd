@@ -16,6 +16,11 @@ enum Phase {
 	MATCH_OVER,  # someone won the match
 }
 
+## Things that happened this tick, for sounds and effects (view only).
+## 💡 The sim can't play sounds itself (that's the view's job), so it leaves
+## notes here. They're cleared at the start of every tick.
+enum Event { HIT, BLOCK, PARRY, THROW, THROW_BREAK, KO, ROUND_START }
+
 ## Distance between the fighters when a round starts (3 m).
 const START_DISTANCE := 3000
 
@@ -33,6 +38,11 @@ var round_timer := Rules.ROUND_FRAMES  # frames left in the round
 var hitstop := 0
 var round_winner := -1    # 0 = P1, 1 = P2, -1 = draw / none yet
 var match_winner := -1
+## Training mode: no timer, no KOs, health refills after each combo.
+var training := false
+## This tick's events: {type, fighter, x, y, amount}. Not part of the checksum,
+## because they're a by-product of the state, not part of it.
+var events: Array[Dictionary] = []
 
 # The last hit or block, shown by the debug HUD. Part of the state so that
 # replays and rollback show the same info.
@@ -44,8 +54,9 @@ var last_advantage := 0
 
 ## Builds the starting state for a match between two characters.
 ## With `intro`, the first round starts with the READY countdown.
-static func create(defs: Array[CharacterDef], intro := false) -> FightState:
+static func create(defs: Array[CharacterDef], intro := false, training_mode := false) -> FightState:
 	var s := FightState.new()
+	s.training = training_mode
 	s.reset_fighters(defs)
 	if intro:
 		s.phase = Phase.READY
@@ -61,12 +72,17 @@ func reset_fighters(defs: Array[CharacterDef]) -> void:
 		f.health = defs[i].max_health
 		f.facing = 1 if i == 0 else -1  # P1 on the left facing right, P2 mirrored
 		f.pos_x = -f.facing * START_DISTANCE / 2
+		defs[i].get_style().init_state(f)
 		fighters.append(f)
 
 
 func set_phase(new_phase: Phase) -> void:
 	phase = new_phase
 	phase_frame = 0
+
+
+func emit(type: Event, fighter: int, x: int, y: int, amount: int) -> void:
+	events.append({"type": type, "fighter": fighter, "x": x, "y": y, "amount": amount})
 
 
 func record_contact(attacker: int, move_index: int, blocked: bool, advantage: int) -> void:
@@ -91,6 +107,8 @@ func copy() -> FightState:
 	c.hitstop = hitstop
 	c.round_winner = round_winner
 	c.match_winner = match_winner
+	c.training = training
+	c.events = events.duplicate(true)
 	c.last_attacker = last_attacker
 	c.last_move_index = last_move_index
 	c.last_blocked = last_blocked
@@ -103,7 +121,7 @@ func copy() -> FightState:
 func checksum() -> int:
 	var h := FixedMath.HASH_SEED
 	for value in [frame, stage_left, stage_right, phase, phase_frame, round_number,
-			wins[0], wins[1], round_timer, hitstop, round_winner, match_winner,
+			wins[0], wins[1], round_timer, hitstop, round_winner, match_winner, int(training),
 			last_attacker, last_move_index, int(last_blocked), last_advantage]:
 		h = FixedMath.hash_mix(h, value)
 	for f in fighters:

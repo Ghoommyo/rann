@@ -1,7 +1,8 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scenes/fight.gd" id="1_fight"]
-[ext_resource type="Resource" path="res://data/characters/dummy/character.tres" id="2_dummy"]
+[ext_resource type="Resource" path="res://data/characters/kael/character.tres" id="2_kael"]
+[ext_resource type="Resource" path="res://data/characters/mira/character.tres" id="6_mira"]
 [ext_resource type="Script" path="res://view/debug/hitbox_overlay.gd" id="3_overlay"]
 [ext_resource type="Script" path="res://ui/fight_hud.gd" id="4_hud"]
 [ext_resource type="Script" path="res://ui/touch_controls.gd" id="5_touch"]
@@ -21,8 +22,8 @@ albedo_color = Color(0.3, 0.32, 0.36, 1)
 
 [node name="Fight" type="Node3D"]
 script = ExtResource("1_fight")
-p1_character = ExtResource("2_dummy")
-p2_character = ExtResource("2_dummy")
+p1_character = ExtResource("2_kael")
+p2_character = ExtResource("6_mira")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_main")

@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="MoveDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+id = "tiger_slash"
+display_name = "Tiger Slash"
+animation_name = "tiger_slash"
+command = "RP"
+startup = 12
+active = 3
+recovery = 18
+hitbox_offset_x = 250
+hitbox_offset_y = 1250
+hitbox_width = 600
+hitbox_height = 300
+hit_level = 0
+damage = 60
+hitstun = 25
+blockstun = 16
+pushback = 36
+hitstop = 8
+required_stance = "tiger"

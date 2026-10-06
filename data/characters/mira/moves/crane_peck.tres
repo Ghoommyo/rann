@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="MoveDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+id = "crane_peck"
+display_name = "Crane Peck"
+animation_name = "crane_peck"
+command = "LP"
+startup = 9
+active = 2
+recovery = 14
+hitbox_offset_x = 250
+hitbox_offset_y = 1350
+hitbox_width = 450
+hitbox_height = 250
+hit_level = 0
+damage = 40
+hitstun = 21
+blockstun = 16
+pushback = 20
+hitstop = 6
+required_stance = "crane"

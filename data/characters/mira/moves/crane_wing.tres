@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="MoveDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+id = "crane_wing"
+display_name = "Crane Wing"
+animation_name = "crane_wing"
+command = "RP"
+startup = 13
+active = 3
+recovery = 20
+hitbox_offset_x = 250
+hitbox_offset_y = 900
+hitbox_width = 650
+hitbox_height = 450
+hit_level = 1
+damage = 70
+hitstun = 25
+blockstun = 14
+pushback = 36
+hitstop = 9
+required_stance = "crane"

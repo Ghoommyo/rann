@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="MoveDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+id = "uppercut"
+display_name = "Uppercut"
+animation_name = "uppercut"
+command = "3+RP"
+startup = 15
+active = 3
+recovery = 26
+hitbox_offset_x = 200
+hitbox_offset_y = 900
+hitbox_width = 500
+hitbox_height = 800
+hit_level = 1
+damage = 60
+hitstun = 30
+blockstun = 15
+pushback = 20
+hitstop = 10
+on_hit = 1

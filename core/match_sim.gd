@@ -15,6 +15,7 @@ const Phase := FightState.Phase
 static func step(state: FightState, defs: Array[CharacterDef], input_p1: int, input_p2: int) -> void:
 	var p1 := state.fighters[0]
 	var p2 := state.fighters[1]
+	state.events.clear()
 
 	# 1. Record this frame's inputs. Outside of the fight itself (intro, KO
 	#    pause) players have no control, so neutral input is recorded instead.
@@ -27,6 +28,7 @@ static func step(state: FightState, defs: Array[CharacterDef], input_p1: int, in
 		state.phase_frame += 1
 		if state.phase_frame >= Rules.READY_FRAMES:
 			state.set_phase(Phase.FIGHTING)
+			state.emit(FightState.Event.ROUND_START, -1, 0, 0, state.round_number)
 		return
 
 	# 2. Hitstop: everything freezes for a few frames after a hit. Inputs are
@@ -62,6 +64,9 @@ static func _update_round(state: FightState, defs: Array[CharacterDef]) -> void:
 	state.phase_frame += 1
 	match state.phase:
 		Phase.FIGHTING:
+			if state.training:
+				_training_rules(state, defs)
+				return
 			state.round_timer -= 1
 			var ko1 := state.fighters[0].health <= 0
 			var ko2 := state.fighters[1].health <= 0
@@ -91,6 +96,10 @@ static func _end_round(state: FightState, ko1: bool, ko2: bool) -> void:
 		state.wins[1] += 1
 	state.round_winner = winner
 	state.set_phase(Phase.ROUND_OVER)
+	if ko1 or ko2:
+		var loser := 0 if ko1 else 1
+		var f := state.fighters[loser]
+		state.emit(FightState.Event.KO, loser, f.pos_x, f.pos_y + 900, 0)
 
 
 static func _next_round_or_finish(state: FightState, defs: Array[CharacterDef]) -> void:
@@ -111,6 +120,15 @@ static func _next_round_or_finish(state: FightState, defs: Array[CharacterDef]) 
 	for i in 2:
 		state.fighters[i].input = inputs[i]
 	state.set_phase(Phase.READY)
+
+
+## Training mode: nobody can be KO'd, and health refills once a combo is over.
+static func _training_rules(state: FightState, defs: Array[CharacterDef]) -> void:
+	for i in 2:
+		var f := state.fighters[i]
+		f.health = maxi(1, f.health)
+		if f.combo_hits == 0 and StyleComponent.is_free(f):
+			f.health = defs[i].max_health
 
 
 static func _update_facing(f: FighterState, opponent: FighterState) -> void:

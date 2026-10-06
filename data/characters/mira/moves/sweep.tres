@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="MoveDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+id = "sweep"
+display_name = "Tail Sweep"
+animation_name = "sweep"
+command = "2+RK"
+low_profile = true
+startup = 17
+active = 4
+recovery = 30
+hitbox_offset_x = 250
+hitbox_offset_y = 0
+hitbox_width = 700
+hitbox_height = 300
+hit_level = 2
+damage = 70
+hitstun = 30
+blockstun = 10
+pushback = 30
+hitstop = 10
+on_hit = 2

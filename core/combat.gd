@@ -1,13 +1,14 @@
-## Hits, blocks and throws: what happens when an attack touches the opponent.
+## Hits, blocks, parries and throws: what happens when an attack touches the opponent.
 ##
 ## 💡 Each tick, both fighters' attacks are checked FIRST and applied AFTER.
 ## So if both hit on the same frame, both take damage (a "trade"), and the
 ## result doesn't depend on whether P1 or P2 is checked first.
 class_name Combat
 
-enum Contact { NONE, HIT, BLOCK, THROW }
+enum Contact { NONE, HIT, BLOCK, THROW, PARRY }
 
 const State := FighterState.State
+const Event := FightState.Event
 
 
 ## Checks and applies all contact for this tick.
@@ -18,23 +19,32 @@ static func resolve(state: FightState, defs: Array[CharacterDef]) -> void:
 
 	# Two throws on the same frame cancel each other out.
 	if contacts[0] == Contact.THROW and contacts[1] == Contact.THROW:
-		_break_throw(state.fighters[0], state.fighters[1])
+		_break_throw(state, state.fighters[0], state.fighters[1])
 		return
 	# A strike beats a throw on the same frame.
 	for i in 2:
 		if contacts[i] == Contact.THROW and contacts[1 - i] != Contact.NONE:
 			contacts[i] = Contact.NONE
 
+	# The defender's fight style gets a chance to parry strikes.
+	for i in 2:
+		if contacts[i] == Contact.HIT or contacts[i] == Contact.BLOCK:
+			var a := state.fighters[i]
+			if defs[1 - i].get_style().try_parry(state.fighters[1 - i], defs[i].moves[a.move_index]):
+				contacts[i] = Contact.PARRY
+
 	for i in 2:
 		var attacker := state.fighters[i]
 		var defender := state.fighters[1 - i]
 		match contacts[i]:
 			Contact.HIT:
-				_apply_hit(state, i, defs[i], attacker, defender)
+				_apply_hit(state, i, defs[i], attacker, defs[1 - i], defender)
 			Contact.BLOCK:
-				_apply_block(state, i, defs[i], attacker, defender)
+				_apply_block(state, i, defs[i], attacker, defs[1 - i], defender)
+			Contact.PARRY:
+				_apply_parry(state, i, defs[i], attacker, defs[1 - i], defender)
 			Contact.THROW:
-				_start_throw(attacker, defender)
+				_start_throw(state, i, attacker, defender)
 
 
 ## What `a`'s attack would do to `d` this tick, without changing anything.
@@ -75,17 +85,22 @@ static func update_throws(state: FightState, defs: Array[CharacterDef]) -> void:
 		var move := defs[1 - i].moves[a.move_index]
 		if d.state_frame < Rules.THROW_BREAK_WINDOW:
 			if d.input.just_pressed(move.throw_break_mask()):
-				_break_throw(a, d)
+				_break_throw(state, a, d)
 		else:
 			d.health = maxi(0, d.health - move.damage)
 			d.set_state(State.KNOCKDOWN)
 			d.vel_x = a.facing * move.pushback
 			state.hitstop = maxi(state.hitstop, move.hitstop)
+			defs[1 - i].get_style().on_contact(a, move, false)
+			defs[i].get_style().on_hit_received(d, move)
+			state.emit(Event.HIT, 1 - i, d.pos_x, d.pos_y + 900, move.damage)
 
 
 static func _apply_hit(state: FightState, attacker_index: int, a_def: CharacterDef,
-		a: FighterState, d: FighterState) -> void:
+		a: FighterState, d_def: CharacterDef, d: FighterState) -> void:
 	var move := a_def.moves[a.move_index]
+	_emit_at_contact(state, Event.HIT, attacker_index, move, a, d_def, d)
+
 	var scale := maxi(Rules.MIN_DAMAGE_SCALE, 100 - Rules.DAMAGE_SCALE_STEP * d.combo_hits)
 	d.health = maxi(0, d.health - maxi(1, move.damage * scale / 100))
 	d.combo_hits += 1
@@ -108,10 +123,14 @@ static func _apply_hit(state: FightState, attacker_index: int, a_def: CharacterD
 		advantage = move.hitstun - _frames_left(a, move)
 	state.record_contact(attacker_index, a.move_index, false, advantage)
 
+	a_def.get_style().on_contact(a, move, false)
+	d_def.get_style().on_hit_received(d, move)
+
 
 static func _apply_block(state: FightState, attacker_index: int, a_def: CharacterDef,
-		a: FighterState, d: FighterState) -> void:
+		a: FighterState, d_def: CharacterDef, d: FighterState) -> void:
 	var move := a_def.moves[a.move_index]
+	_emit_at_contact(state, Event.BLOCK, attacker_index, move, a, d_def, d)
 	a.move_connected = true
 	d.set_state(State.BLOCKSTUN)
 	d.stun_frames = move.blockstun
@@ -119,19 +138,36 @@ static func _apply_block(state: FightState, attacker_index: int, a_def: Characte
 	d.vel_x = a.facing * move.pushback
 	state.hitstop = maxi(state.hitstop, move.hitstop)
 	state.record_contact(attacker_index, a.move_index, true, move.blockstun - _frames_left(a, move))
+	a_def.get_style().on_contact(a, move, true)
 
 
-static func _start_throw(a: FighterState, d: FighterState) -> void:
+## 💡 Parry: the attack does nothing, the attacker is stunned and pushed back,
+## and the defender can act immediately: a big punish opportunity.
+static func _apply_parry(state: FightState, attacker_index: int, a_def: CharacterDef,
+		a: FighterState, d_def: CharacterDef, d: FighterState) -> void:
+	var move := a_def.moves[a.move_index]
+	_emit_at_contact(state, Event.PARRY, 1 - attacker_index, move, a, d_def, d)
+	a.move_connected = true
+	a.set_state(State.HITSTUN)
+	a.stun_frames = Rules.PARRY_STUN
+	a.vel_x = -a.facing * move.pushback
+	d.set_state(State.IDLE)
+	d.vel_x = 0
+	state.hitstop = maxi(state.hitstop, Rules.PARRY_HITSTOP)
+
+
+static func _start_throw(state: FightState, attacker_index: int, a: FighterState, d: FighterState) -> void:
 	a.move_connected = true
 	a.set_state(State.THROWING)  # keeps move_index, so we know which throw it is
 	a.vel_x = 0
 	d.set_state(State.THROWN)
 	d.vel_x = 0
 	d.vel_y = 0
+	state.emit(Event.THROW, attacker_index, (a.pos_x + d.pos_x) / 2, 1200, 0)
 
 
 ## Both fighters are pushed apart and stunned briefly.
-static func _break_throw(a: FighterState, d: FighterState) -> void:
+static func _break_throw(state: FightState, a: FighterState, d: FighterState) -> void:
 	for f in [a, d]:
 		f.set_state(State.BLOCKSTUN)
 		f.stun_frames = Rules.THROW_BREAK_STUN
@@ -139,6 +175,15 @@ static func _break_throw(a: FighterState, d: FighterState) -> void:
 		f.move_connected = true
 	a.vel_x = -a.facing * Rules.THROW_BREAK_PUSH
 	d.vel_x = a.facing * Rules.THROW_BREAK_PUSH
+	state.emit(Event.THROW_BREAK, -1, (a.pos_x + d.pos_x) / 2, 1200, 0)
+
+
+## Emits an event where the hitbox meets the hurtbox (for sparks and sounds).
+static func _emit_at_contact(state: FightState, type: FightState.Event, fighter: int, move: MoveDef,
+		a: FighterState, d_def: CharacterDef, d: FighterState) -> void:
+	var spot := move.hitbox_of(a).intersection(Collision.hurtbox_of(d, d_def))
+	var center := spot.get_center()
+	state.emit(type, fighter, center.x, center.y, move.damage)
 
 
 ## Frames the attacker still needs after this one to finish the move.

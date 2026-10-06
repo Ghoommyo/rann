@@ -41,5 +41,10 @@ const THROW_BREAK_WINDOW := 20
 const THROW_BREAK_STUN := 12
 const THROW_BREAK_PUSH := 40
 
+# --- Parry (see ParryComponent) ---
+## The parried attacker is stunned this long; the defender is free at once.
+const PARRY_STUN := 24
+const PARRY_HITSTOP := 14
+
 ## Shown in the debug HUD when frame advantage doesn't apply (knockdowns, launches).
 const NO_ADVANTAGE := 9999
