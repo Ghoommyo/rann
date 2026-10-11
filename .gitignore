@@ -14,3 +14,5 @@ android/
 *.jks
 *.p12
 *.mobileprovision
+# Reference photos of real actors: local only, never committed (likeness rights)
+assets/characters/*/reference/

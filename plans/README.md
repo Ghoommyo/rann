@@ -31,6 +31,7 @@
 | 5 | [05-phase-mobile-release.md](05-phase-mobile-release.md) | Polished touch controls and store-ready Android/iOS builds |
 | — | [06-guide-adding-a-character.md](06-guide-adding-a-character.md) | Checklist for adding new fighters and fight styles |
 | — | [07-guide-mixamo-import.md](07-guide-mixamo-import.md) | Download Mixamo models and animations and build them into the game |
+| — | [08-tulbul-bogembo.md](08-tulbul-bogembo.md) | Plan for the custom fighters Tulbul Pandey and Bogembo |
 
 **Rule of thumb:** finish and test each phase before starting the next one. Every phase ends with something playable.
 
