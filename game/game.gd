@@ -20,6 +20,7 @@ const FIGHT := "res://scenes/fight.tscn"
 var mode := Mode.VERSUS_CPU
 var p1_id := "kael"
 var p2_id := "mira"
+## Versus CPU difficulty, 0..10 (remembered in Settings).
 var cpu_level: int = CpuOpponent.Level.NORMAL
 
 ## The connection to the other player in online mode.
@@ -34,6 +35,7 @@ var _data_hash := ""
 
 
 func _ready() -> void:
+	cpu_level = Settings.cpu_level
 	InputRouter.register_default_actions()
 	_parse_command_line()
 	if cli.host or cli.join != "":
