@@ -26,8 +26,10 @@ Training: `F6` change dummy behaviour · `F7` record / stop (then the dummy play
 |---|---|---|
 | **Kael** | Striker, Rage meter | Rage Burst `236+LP+RP` (full meter) |
 | **Mira** | Tiger ↔ Crane stances (`LK+RK`), parry (tap forward just before a high/mid hits) | Rising Crane launcher (Crane `RK`) |
+| **Tulbul Pandey** | Zoner/counter: long pokes, parry, SWAG meter | Belt Whip `236+RP`, Dabangg Slow-Mo `236+LP+RP` (full meter) |
+| **Bogembo** | Boss grappler: charge moves (hold back), KHUSH meter | Unbreakable Tezaab Drop `4+LP+RP`, Henchman Charge `[4]6+RP` |
 
-3D models: see [plans/07-guide-mixamo-import.md](plans/07-guide-mixamo-import.md). Until you add them, fighters are capsules.
+3D models: see [plans/07-guide-mixamo-import.md](plans/07-guide-mixamo-import.md) (Mixamo stock models) and [plans/09-guide-custom-characters.md](plans/09-guide-custom-characters.md) (your own characters from pictures). Until you add them, fighters are capsules.
 
 ## Mobile builds
 `tools/build_mobile.sh android-debug | android-release | ios`. See [plans/05-phase-mobile-release.md](plans/05-phase-mobile-release.md) for signing and store steps.
