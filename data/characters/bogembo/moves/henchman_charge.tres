@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="MoveDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+id = "henchman_charge"
+display_name = "Henchman Charge"
+animation_name = "henchman_charge"
+command = "6+RP"
+startup = 14
+active = 4
+recovery = 24
+hitbox_offset_x = 250
+hitbox_offset_y = 1000
+hitbox_width = 650
+hitbox_height = 500
+hit_level = 1
+damage = 110
+hitstun = 30
+blockstun = 20
+pushback = 70
+hitstop = 12
+forward_speed = 50
+requires_charge = true

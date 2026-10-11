@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="CharacterDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/character_def.gd" id="1_def"]
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="2_move"]
+[ext_resource type="Resource" path="res://data/characters/tulbul_pandey/style.tres" id="3_style"]
+[ext_resource type="Resource" path="res://data/characters/tulbul_pandey/moves/jab.tres" id="4_jab"]
+[ext_resource type="Resource" path="res://data/characters/tulbul_pandey/moves/thappad.tres" id="5_thappad"]
+[ext_resource type="Resource" path="res://data/characters/tulbul_pandey/moves/police_boot.tres" id="6_police_boot"]
+[ext_resource type="Resource" path="res://data/characters/tulbul_pandey/moves/lathi_poke.tres" id="7_lathi_poke"]
+[ext_resource type="Resource" path="res://data/characters/tulbul_pandey/moves/sweep.tres" id="8_sweep"]
+[ext_resource type="Resource" path="res://data/characters/tulbul_pandey/moves/buckle_uppercut.tres" id="9_buckle_uppercut"]
+[ext_resource type="Resource" path="res://data/characters/tulbul_pandey/moves/belt_whip.tres" id="10_belt_whip"]
+[ext_resource type="Resource" path="res://data/characters/tulbul_pandey/moves/chashma_flip.tres" id="11_chashma_flip"]
+[ext_resource type="Resource" path="res://data/characters/tulbul_pandey/moves/dabangg_slowmo.tres" id="12_dabangg_slowmo"]
+[ext_resource type="Resource" path="res://data/characters/tulbul_pandey/moves/throw.tres" id="13_throw"]
+
+[resource]
+script = ExtResource("1_def")
+id = "tulbul_pandey"
+display_name = "Tulbul Pandey"
+max_health = 1000
+walk_forward_speed = 36
+walk_back_speed = 30
+style = ExtResource("3_style")
+description = "Swaggering cop. Long pokes and a belt whip keep you out; tap forward to parry. Darr nahi lagta… swag lagta hai."
+color = Color(0.76, 0.65, 0.42, 1)
+moves = Array[ExtResource("2_move")]([ExtResource("4_jab"), ExtResource("5_thappad"), ExtResource("6_police_boot"), ExtResource("7_lathi_poke"), ExtResource("8_sweep"), ExtResource("9_buckle_uppercut"), ExtResource("10_belt_whip"), ExtResource("11_chashma_flip"), ExtResource("12_dabangg_slowmo"), ExtResource("13_throw")])

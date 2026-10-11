@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="MoveDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+id = "khush_hua"
+display_name = "Khush Hua!"
+animation_name = "khush_hua"
+command = "236+LP+RP"
+startup = 8
+active = 2
+recovery = 40
+hitbox_offset_x = 200
+hitbox_offset_y = 800
+hitbox_width = 500
+hitbox_height = 700
+hit_level = 3
+damage = 300
+hitstun = 0
+blockstun = 0
+pushback = 40
+hitstop = 20
+meter_cost = 1000
+throw_break_buttons = 0
+throw_duration = 80
