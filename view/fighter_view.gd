@@ -96,7 +96,17 @@ func _setup_model() -> void:
 		_model.add_child(_anim)
 	if _anim == null:
 		return
+	# Tracks are "Skeleton3D:<bone>", relative to the skeleton's parent. Mixamo
+	# puts the skeleton right under the model root; a Blender export nests it
+	# in an "Armature" node, so point the player at whichever node holds it.
+	var skeletons := _model.find_children("*", "Skeleton3D", true, false)
+	if not skeletons.is_empty():
+		_anim.root_node = _anim.get_path_to(skeletons[0].get_parent())
 	if _def.animation_library and not _anim.has_animation_library("moves"):
+		# The model's own clips (e.g. a Blender "Scene" take) aren't used and
+		# may point at other node paths, so keep only the character's library.
+		for library in _anim.get_animation_library_list():
+			_anim.remove_animation_library(library)
 		_anim.add_animation_library("moves", _def.animation_library)
 	_anim.speed_scale = 0.0  # we pose it manually every frame
 
@@ -117,9 +127,35 @@ func _fit_scale() -> float:
 		var box := xf * mesh_instance.get_aabb()
 		bounds = box if first else bounds.merge(box)
 		first = false
-	if first or bounds.size.y <= 0.01:
+	var height := bounds.size.y if not first else 0.0
+	if height <= 0.01:
+		# Some exports store the skinned mesh at another scale, so its bounds
+		# say nothing about the posed size. Measure the skeleton instead.
+		height = _skeleton_height()
+	if height <= 0.01:
 		return 1.0
-	return FixedMath.to_meters(_def.stand_height) / bounds.size.y
+	return FixedMath.to_meters(_def.stand_height) / height
+
+
+## Height from the lowest to the highest bone at rest, relative to the model root.
+func _skeleton_height() -> float:
+	var skeletons := _model.find_children("*", "Skeleton3D", true, false)
+	if skeletons.is_empty():
+		return 0.0
+	var skeleton: Skeleton3D = skeletons[0]
+	var xf := Transform3D()
+	var n: Node = skeleton
+	while n != _model:
+		if n is Node3D:
+			xf = (n as Node3D).transform * xf
+		n = n.get_parent()
+	var low := INF
+	var high := -INF
+	for bone in skeleton.get_bone_count():
+		var y := (xf * skeleton.get_bone_global_rest(bone).origin).y
+		low = minf(low, y)
+		high = maxf(high, y)
+	return high - low if high > low else 0.0
 
 
 func _show_model(cur: FighterState, global_frame: int) -> void:

@@ -1,6 +1,8 @@
 [gd_resource type="Resource" script_class="CharacterDef" format=3]
 
+[ext_resource type="AnimationLibrary" path="res://data/characters/tulbul_pandey/animations.res" id="1_2g11k"]
 [ext_resource type="Script" path="res://core/defs/character_def.gd" id="1_def"]
+[ext_resource type="PackedScene" path="res://assets/characters/tulbul_pandey/model.fbx" id="2_cse0a"]
 [ext_resource type="Script" path="res://core/defs/move_def.gd" id="2_move"]
 [ext_resource type="Resource" path="res://data/characters/tulbul_pandey/style.tres" id="3_style"]
 [ext_resource type="Resource" path="res://data/characters/tulbul_pandey/moves/jab.tres" id="4_jab"]
@@ -18,10 +20,10 @@
 script = ExtResource("1_def")
 id = "tulbul_pandey"
 display_name = "Tulbul Pandey"
-max_health = 1000
 walk_forward_speed = 36
-walk_back_speed = 30
 style = ExtResource("3_style")
 description = "Swaggering cop. Long pokes and a belt whip keep you out; tap forward to parry. Darr nahi lagta… swag lagta hai."
 color = Color(0.76, 0.65, 0.42, 1)
+model_scene = ExtResource("2_cse0a")
+animation_library = ExtResource("1_2g11k")
 moves = Array[ExtResource("2_move")]([ExtResource("4_jab"), ExtResource("5_thappad"), ExtResource("6_police_boot"), ExtResource("7_lathi_poke"), ExtResource("8_sweep"), ExtResource("9_buckle_uppercut"), ExtResource("10_belt_whip"), ExtResource("11_chashma_flip"), ExtResource("12_dabangg_slowmo"), ExtResource("13_throw")])
