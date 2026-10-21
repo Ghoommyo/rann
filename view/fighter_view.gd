@@ -34,6 +34,8 @@ const STATE_ANIMS := {
 	State.THROWN: ["thrown", false],
 }
 
+const HIPS_BONE := "mixamorig_Hips"
+
 const HIT_TINT := Color(1, 1, 1)
 const BLOCK_TINT := Color(0.4, 0.9, 1.0)
 const THROWN_TINT := Color(0.8, 0.4, 1.0)
@@ -100,15 +102,48 @@ func _setup_model() -> void:
 	# puts the skeleton right under the model root; a Blender export nests it
 	# in an "Armature" node, so point the player at whichever node holds it.
 	var skeletons := _model.find_children("*", "Skeleton3D", true, false)
-	if not skeletons.is_empty():
-		_anim.root_node = _anim.get_path_to(skeletons[0].get_parent())
+	var skeleton: Skeleton3D = skeletons[0] if not skeletons.is_empty() else null
+	if skeleton:
+		_anim.root_node = _anim.get_path_to(skeleton.get_parent())
 	if _def.animation_library and not _anim.has_animation_library("moves"):
 		# The model's own clips (e.g. a Blender "Scene" take) aren't used and
 		# may point at other node paths, so keep only the character's library.
 		for library in _anim.get_animation_library_list():
 			_anim.remove_animation_library(library)
-		_anim.add_animation_library("moves", _def.animation_library)
+		_anim.add_animation_library("moves", _fit_hips(_def.animation_library, skeleton))
 	_anim.speed_scale = 0.0  # we pose it manually every frame
+
+
+## Animations can come from another character's body (e.g. Kael's anims on
+## Tulbul). Their hip positions are in that body's units and proportions, so
+## scale the hips by (this model's hip height ÷ the source's), stored by
+## tools/build_animation_libraries.gd as "source_hips". Without this a fighter
+## floats, sinks, or (with a differently scaled skeleton) vanishes off screen.
+## Returns the shared library untouched when every animation already fits.
+static func _fit_hips(library: AnimationLibrary, skeleton: Skeleton3D) -> AnimationLibrary:
+	var bone := skeleton.find_bone(HIPS_BONE) if skeleton else -1
+	if bone < 0:
+		return library
+	var model_hips := skeleton.get_bone_global_rest(bone).origin.y
+	var fitted: AnimationLibrary = null
+	for anim_name in library.get_animation_list():
+		var anim := library.get_animation(anim_name)
+		var source_hips: float = anim.get_meta("source_hips", 0.0)
+		if source_hips <= 0.0 or model_hips <= 0.0 or absf(model_hips / source_hips - 1.0) <= 0.01:
+			continue
+		if fitted == null:
+			# A copy for this fighter only: the shared library stays as built.
+			fitted = AnimationLibrary.new()
+			for other in library.get_animation_list():
+				fitted.add_animation(other, library.get_animation(other))
+		var scaled: Animation = anim.duplicate(true)
+		for t in scaled.get_track_count():
+			if scaled.track_get_type(t) == Animation.TYPE_POSITION_3D and str(scaled.track_get_path(t)).ends_with(HIPS_BONE):
+				for k in scaled.track_get_key_count(t):
+					scaled.track_set_key_value(t, k, scaled.track_get_key_value(t, k) * (model_hips / source_hips))
+		fitted.remove_animation(anim_name)
+		fitted.add_animation(anim_name, scaled)
+	return fitted if fitted else library
 
 
 ## Scale that makes the model as tall as the character's stand_height.

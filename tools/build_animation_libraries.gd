@@ -19,8 +19,9 @@
 ## movement is kept, so crouches and jumps still look right.
 ##
 ## Animations may come from another character (e.g. Kael's anims on Tulbul).
-## Their hip positions are in the source's proportions, so they are scaled by
-## (model hip height ÷ source hip height) to keep the feet on the floor.
+## Each one records its source skeleton's hip height ("source_hips" metadata);
+## FighterView uses it to fit the hips to whatever model is loaded, so a
+## model can be swapped without rebuilding.
 extends SceneTree
 
 const ASSETS := "res://assets/characters"
@@ -51,12 +52,10 @@ func _build_character(id: String) -> void:
 	var def: CharacterDef = load(def_path)
 	var folder := "%s/%s" % [ASSETS, id]
 
-	var model_hips := 0.0
 	for model_name in MODEL_NAMES:
 		var model_path := "%s/%s" % [folder, model_name]
 		if ResourceLoader.exists(model_path):
 			def.model_scene = load(model_path)
-			model_hips = _hips_height(def.model_scene)
 			print("%s: model %s" % [id, model_path])
 			break
 
@@ -77,8 +76,8 @@ func _build_character(id: String) -> void:
 			anim.loop_mode = Animation.LOOP_LINEAR if anim_name in LOOPING else Animation.LOOP_NONE
 			_lock_root_motion(anim)
 			var source_hips := _hips_height(load(anim_path))
-			if model_hips > 0.0 and source_hips > 0.0 and absf(model_hips / source_hips - 1.0) > 0.01:
-				_scale_hips(anim, model_hips / source_hips)
+			if source_hips > 0.0:
+				anim.set_meta("source_hips", source_hips)
 			library.add_animation(anim_name, anim)
 		var library_path := "res://data/characters/%s/animations.res" % id
 		ResourceSaver.save(library, library_path)
@@ -138,14 +137,6 @@ func _hips_height(scene: Resource) -> float:
 			height = skeleton.get_bone_global_rest(bone).origin.y
 	root.free()
 	return height
-
-
-## Scales the hips' position so an animation fits a taller or shorter body.
-func _scale_hips(anim: Animation, ratio: float) -> void:
-	for t in anim.get_track_count():
-		if anim.track_get_type(t) == Animation.TYPE_POSITION_3D and str(anim.track_get_path(t)).ends_with("Hips"):
-			for k in anim.track_get_key_count(t):
-				anim.track_set_key_value(t, k, anim.track_get_key_value(t, k) * ratio)
 
 
 ## Lists the animations the character still needs.
