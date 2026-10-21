@@ -112,7 +112,20 @@ func _setup_model() -> void:
 
 
 ## Scale that makes the model as tall as the character's stand_height.
+## 💡 An animated model is drawn from its skeleton, so the skeleton's height is
+## the reliable measure. A skinned mesh's own bounds can be stored at another
+## scale (common in AI-generated or Blender-exported models).
 func _fit_scale() -> float:
+	var height := _skeleton_height()
+	if height <= 0.01:
+		height = _mesh_height()
+	if height <= 0.01:
+		return 1.0
+	return FixedMath.to_meters(_def.stand_height) / height
+
+
+## Height of all meshes' bounds, relative to the model root.
+func _mesh_height() -> float:
 	var bounds := AABB()
 	var first := true
 	for node in _model.find_children("*", "MeshInstance3D", true, false):
@@ -127,14 +140,7 @@ func _fit_scale() -> float:
 		var box := xf * mesh_instance.get_aabb()
 		bounds = box if first else bounds.merge(box)
 		first = false
-	var height := bounds.size.y if not first else 0.0
-	if height <= 0.01:
-		# Some exports store the skinned mesh at another scale, so its bounds
-		# say nothing about the posed size. Measure the skeleton instead.
-		height = _skeleton_height()
-	if height <= 0.01:
-		return 1.0
-	return FixedMath.to_meters(_def.stand_height) / height
+	return bounds.size.y if not first else 0.0
 
 
 ## Height from the lowest to the highest bone at rest, relative to the model root.

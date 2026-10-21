@@ -21,10 +21,13 @@ func _p1_move() -> String:
 	return defs[0].moves[f.move_index].id if f.state == S.ATTACK else ""
 
 
-func test_both_are_in_the_roster():
+func test_new_fighters_are_in_the_roster():
 	var ids := CharacterRegistry.all().map(func(d): return d.id)
-	assert_has(ids, "tulbul_pandey")
-	assert_has(ids, "bogembo")
+	for id in ["tulbul_pandey", "bogembo", "ravan", "aswashthama"]:
+		assert_has(ids, id)
+		var def := CharacterRegistry.get_def(id)
+		assert_not_null(def.model_scene, "%s has a model" % id)
+		assert_not_null(def.animation_library, "%s has animations" % id)
 
 
 func test_tezaab_drop_cannot_be_broken():

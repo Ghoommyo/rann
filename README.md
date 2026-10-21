@@ -28,6 +28,8 @@ Training: `F6` change dummy behaviour · `F7` record / stop (then the dummy play
 | **Mira** | Tiger ↔ Crane stances (`LK+RK`), parry (tap forward just before a high/mid hits) | Rising Crane launcher (Crane `RK`) |
 | **Tulbul Pandey** | Zoner/counter: long pokes, parry, SWAG meter | Belt Whip `236+RP`, Dabangg Slow-Mo `236+LP+RP` (full meter) |
 | **Bogembo** | Boss grappler: charge moves (hold back), KHUSH meter | Unbreakable Tezaab Drop `4+LP+RP`, Henchman Charge `[4]6+RP` |
+| **Ravan** | Heavy demon king, long reach, DASHANAN meter | Maya Wave `236+RK`, Dashanan Rage `236+LP+RP` (full meter) |
+| **Aswashthama** | Fast rushdown with parry, MANI meter | Astra Rush `236+RP`, Narayanastra `236+LP+RP` (full meter) |
 
 3D models: see [plans/07-guide-mixamo-import.md](plans/07-guide-mixamo-import.md) (Mixamo stock models) and [plans/09-guide-custom-characters.md](plans/09-guide-custom-characters.md) (your own characters from pictures). Until you add them, fighters are capsules.
 

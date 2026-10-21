@@ -1,6 +1,8 @@
 [gd_resource type="Resource" script_class="CharacterDef" format=3]
 
 [ext_resource type="Script" path="res://core/defs/character_def.gd" id="1_def"]
+[ext_resource type="AnimationLibrary" path="res://data/characters/bogembo/animations.res" id="1_ytmsw"]
+[ext_resource type="PackedScene" path="res://assets/characters/bogembo/model.fbx" id="2_kw85w"]
 [ext_resource type="Script" path="res://core/defs/move_def.gd" id="2_move"]
 [ext_resource type="Resource" path="res://data/characters/bogembo/style.tres" id="3_style"]
 [ext_resource type="Resource" path="res://data/characters/bogembo/moves/backhand.tres" id="4_backhand"]
@@ -22,9 +24,11 @@ display_name = "Bogembo"
 max_health = 1150
 walk_forward_speed = 30
 walk_back_speed = 24
-stand_height = 1850
 hurtbox_half_width = 380
+stand_height = 1850
 style = ExtResource("3_style")
 description = "Supervillain boss. Slow and heavy; charge back for his Henchman Charge, and fear the Tezaab Drop. Bogembo khush hua!"
 color = Color(0.75, 0.6, 0.15, 1)
+model_scene = ExtResource("2_kw85w")
+animation_library = ExtResource("1_ytmsw")
 moves = Array[ExtResource("2_move")]([ExtResource("4_backhand"), ExtResource("5_tyrant_fist"), ExtResource("6_throne_kick"), ExtResource("7_shin_stomp"), ExtResource("8_robe_sweep"), ExtResource("9_overlord_uppercut"), ExtResource("10_henchman_charge"), ExtResource("11_tezaab_drop"), ExtResource("12_laser_sweep"), ExtResource("13_khush_hua"), ExtResource("14_throw")])

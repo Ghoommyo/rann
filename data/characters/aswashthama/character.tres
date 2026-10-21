@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="CharacterDef" format=3]
+
+[ext_resource type="AnimationLibrary" path="res://data/characters/aswashthama/animations.res" id="1_23nf2"]
+[ext_resource type="Script" path="res://core/defs/character_def.gd" id="1_def"]
+[ext_resource type="PackedScene" path="res://assets/characters/aswashthama/model.fbx" id="2_ai3x6"]
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="2_move"]
+[ext_resource type="Resource" path="res://data/characters/aswashthama/style.tres" id="3_style"]
+[ext_resource type="Resource" path="res://data/characters/aswashthama/moves/jab.tres" id="4_jab"]
+[ext_resource type="Resource" path="res://data/characters/aswashthama/moves/twin_strike.tres" id="5_twin_strike"]
+[ext_resource type="Resource" path="res://data/characters/aswashthama/moves/drona_kick.tres" id="6_drona_kick"]
+[ext_resource type="Resource" path="res://data/characters/aswashthama/moves/low_slash.tres" id="7_low_slash"]
+[ext_resource type="Resource" path="res://data/characters/aswashthama/moves/sweep.tres" id="8_sweep"]
+[ext_resource type="Resource" path="res://data/characters/aswashthama/moves/rising_arrow.tres" id="9_rising_arrow"]
+[ext_resource type="Resource" path="res://data/characters/aswashthama/moves/astra_rush.tres" id="10_astra_rush"]
+[ext_resource type="Resource" path="res://data/characters/aswashthama/moves/night_raid.tres" id="11_night_raid"]
+[ext_resource type="Resource" path="res://data/characters/aswashthama/moves/narayanastra.tres" id="12_narayanastra"]
+[ext_resource type="Resource" path="res://data/characters/aswashthama/moves/throw.tres" id="13_throw"]
+
+[resource]
+script = ExtResource("1_def")
+id = "aswashthama"
+display_name = "Aswashthama"
+max_health = 950
+walk_forward_speed = 46
+walk_back_speed = 34
+style = ExtResource("3_style")
+description = "Immortal warrior. Fast strings and dashing attacks; tap forward to parry. Fill MANI for Narayanastra."
+color = Color(0.3, 0.55, 0.9, 1)
+model_scene = ExtResource("2_ai3x6")
+animation_library = ExtResource("1_23nf2")
+moves = Array[ExtResource("2_move")]([ExtResource("4_jab"), ExtResource("5_twin_strike"), ExtResource("6_drona_kick"), ExtResource("7_low_slash"), ExtResource("8_sweep"), ExtResource("9_rising_arrow"), ExtResource("10_astra_rush"), ExtResource("11_night_raid"), ExtResource("12_narayanastra"), ExtResource("13_throw")])
