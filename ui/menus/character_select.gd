@@ -8,7 +8,8 @@ extends Control
 var _roster: Array[CharacterDef] = []
 var _picking := 0  # 0 = choosing P1, 1 = choosing P2
 var _title: Label
-var _cards: HBoxContainer
+var _cards: GridContainer
+var _rows := 1
 var _info: Label
 var _level_row: HBoxContainer
 var _level_buttons: Array[Button] = []
@@ -33,10 +34,15 @@ func _ready() -> void:
 	_title = MenuStyle.label("", 44)
 	column.add_child(_title)
 
-	_cards = HBoxContainer.new()
-	_cards.alignment = BoxContainer.ALIGNMENT_CENTER
-	_cards.add_theme_constant_override("separation", 24)
-	_cards.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	# Up to 4 fighters fit in one row of tall cards; more wrap into rows of
+	# shorter cards, so every fighter stays on screen (and tappable).
+	_cards = GridContainer.new()
+	_cards.columns = _roster.size() if _roster.size() <= 4 else ceili(_roster.size() / 2.0)
+	_rows = ceili(_roster.size() / float(maxi(1, _cards.columns)))
+	_cards.add_theme_constant_override("h_separation", 24)
+	_cards.add_theme_constant_override("v_separation", 16)
+	_cards.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_cards.size_flags_vertical = Control.SIZE_EXPAND | Control.SIZE_SHRINK_CENTER
 	column.add_child(_cards)
 	for def in _roster:
 		_cards.add_child(_make_card(def))
@@ -68,8 +74,8 @@ func _ready() -> void:
 
 func _make_card(def: CharacterDef) -> Button:
 	var card := MenuStyle.button(def.display_name.to_upper(), func(): _pick(def), 260)
-	card.custom_minimum_size = Vector2(260, 300)
-	card.add_theme_font_size_override("font_size", 34)
+	card.custom_minimum_size = Vector2(260, 300) if _rows == 1 else Vector2(300, 140)
+	card.add_theme_font_size_override("font_size", 34 if _rows == 1 else 28)
 	for state in ["font_color", "font_focus_color", "font_hover_color", "font_pressed_color"]:
 		card.add_theme_color_override(state, def.color.lightened(0.35))
 	card.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
