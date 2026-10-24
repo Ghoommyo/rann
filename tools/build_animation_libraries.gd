@@ -4,6 +4,8 @@
 ## For every folder assets/characters/<id>/:
 ##   model.fbx (or .glb)  → CharacterDef.model_scene
 ##   anims/<name>.fbx     → animation "<name>" in data/characters/<id>/animations.res
+##   recorded/<name>.fbx  → the same, made from your own video (replaces anims/<name>);
+##                          turned to face forward and trimmed (tools/clip_cleanup.gd)
 ##
 ## The file name becomes the animation name, so name the files after the
 ## STATE_ANIMS in view/fighter_view.gd (idle.fbx, walk_forward.fbx, …) and after
@@ -25,9 +27,10 @@
 extends SceneTree
 
 const ASSETS := "res://assets/characters"
-const LOOPING := ["idle", "walk_forward", "walk_back", "crouch"]
+const LOOPING := ["idle", "walk_forward", "walk_back", "crouch"]  # and any "<stance>_idle"
 const MODEL_NAMES := ["model.fbx", "model.glb", "model.gltf"]
 const HIPS := "mixamorig_Hips"
+const ClipCleanup := preload("res://tools/clip_cleanup.gd")
 
 
 func _init() -> void:
@@ -60,32 +63,68 @@ func _build_character(id: String) -> void:
 			break
 
 	var anim_folder := folder + "/anims"
-	if DirAccess.dir_exists_absolute(anim_folder):
+	var recorded_folder := folder + "/recorded"
+	if DirAccess.dir_exists_absolute(anim_folder) or DirAccess.dir_exists_absolute(recorded_folder):
 		var library := AnimationLibrary.new()
-		var files := Array(DirAccess.get_files_at(anim_folder))
-		files.sort()
-		for file in files:
-			if file.get_extension() not in ["fbx", "glb", "gltf"]:
-				continue
-			var anim_path := "%s/%s" % [anim_folder, file]
-			var anim := _first_animation(anim_path)
-			if anim == null:
-				printerr("%s: no animation found in %s" % [id, file])
-				continue
-			var anim_name: String = file.get_basename()
-			anim.loop_mode = Animation.LOOP_LINEAR if anim_name in LOOPING else Animation.LOOP_NONE
-			_lock_root_motion(anim)
-			var source_hips := _hips_height(load(anim_path))
-			if source_hips > 0.0:
-				anim.set_meta("source_hips", source_hips)
-			library.add_animation(anim_name, anim)
+		for anim_path in _clip_files(anim_folder):
+			_add_clip(id, library, anim_path, false, 0.0)
+		# Your own recordings replace the borrowed clip of the same name. They're
+		# turned so their stance faces like the fighter's Mixamo idle.
+		var reference := 0.0
+		if ResourceLoader.exists(anim_folder + "/idle.fbx"):
+			var idle := _first_animation(anim_folder + "/idle.fbx")
+			reference = ClipCleanup.start_yaw(idle, _hips_rest(load(anim_folder + "/idle.fbx")))
+		var recorded := {}
+		for anim_path in _clip_files(recorded_folder):
+			if _add_clip(id, library, anim_path, true, reference):
+				recorded[anim_path.get_file().get_basename()] = true
 		var library_path := "res://data/characters/%s/animations.res" % id
 		ResourceSaver.save(library, library_path)
 		def.animation_library = load(library_path)
 		print("%s: %d animations → %s" % [id, library.get_animation_list().size(), library_path])
-		_report_missing(id, def, library)
+		_report(id, def, library, recorded)
 
 	ResourceSaver.save(def, def_path)
+
+
+func _clip_files(dir: String) -> Array[String]:
+	var paths: Array[String] = []
+	if DirAccess.dir_exists_absolute(dir):
+		var files := Array(DirAccess.get_files_at(dir))
+		files.sort()
+		for file in files:
+			if file.get_extension() in ["fbx", "glb", "gltf"]:
+				paths.append("%s/%s" % [dir, file])
+	return paths
+
+
+## Adds one clip to the library (replacing one of the same name). Recorded
+## clips are cleaned up first. Returns false if the file has no animation.
+func _add_clip(id: String, library: AnimationLibrary, path: String, recorded: bool, reference_yaw: float) -> bool:
+	var anim := _first_animation(path)
+	if anim == null:
+		printerr("%s: no animation found in %s" % [id, path.get_file()])
+		return false
+	var anim_name := path.get_file().get_basename()
+	var looping := anim_name in LOOPING or anim_name.ends_with("_idle")
+	anim.loop_mode = Animation.LOOP_LINEAR if looping else Animation.LOOP_NONE
+	var scene: Resource = load(path)
+	if recorded:
+		var turn := ClipCleanup.face_like(anim, _hips_rest(scene), reference_yaw)
+		var note := "turned %d°" % roundi(rad_to_deg(turn))
+		if not looping:
+			var length := anim.length
+			var kept := ClipCleanup.trim_still(anim)
+			note += ", kept %.2f–%.2f s of %.2f s" % [kept[0], kept[1], length]
+		print("%s: recorded %s (%s)" % [id, anim_name, note])
+	_lock_root_motion(anim)
+	var source_hips := _hips_height(scene)
+	if source_hips > 0.0:
+		anim.set_meta("source_hips", source_hips)
+	if library.has_animation(anim_name):
+		library.remove_animation(anim_name)
+	library.add_animation(anim_name, anim)
+	return true
 
 
 ## The first animation in an imported file (imported as a scene or as a library).
@@ -125,29 +164,42 @@ func _lock_root_motion(anim: Animation) -> void:
 
 ## Rest height of the hips bone in its skeleton's own units (0 if not found).
 func _hips_height(scene: Resource) -> float:
+	return _hips_rest_transform(scene).origin.y
+
+
+## Rest rotation of the hips bone (identity if not found).
+func _hips_rest(scene: Resource) -> Quaternion:
+	return _hips_rest_transform(scene).basis.get_rotation_quaternion()
+
+
+func _hips_rest_transform(scene: Resource) -> Transform3D:
 	if not scene is PackedScene:
-		return 0.0
+		return Transform3D()
 	var root: Node = scene.instantiate()
-	var height := 0.0
+	var rest := Transform3D()
 	var skeletons := root.find_children("*", "Skeleton3D", true, false)
 	if not skeletons.is_empty():
 		var skeleton: Skeleton3D = skeletons[0]
 		var bone := skeleton.find_bone(HIPS)
 		if bone >= 0:
-			height = skeleton.get_bone_global_rest(bone).origin.y
+			rest = skeleton.get_bone_global_rest(bone)
 	root.free()
-	return height
+	return rest
 
 
-## Lists the animations the character still needs.
-func _report_missing(id: String, def: CharacterDef, library: AnimationLibrary) -> void:
+## Which animations are your own recordings, which are still borrowed
+## (anims/: Mixamo or another fighter's), and which are missing.
+func _report(id: String, def: CharacterDef, library: AnimationLibrary, recorded: Dictionary) -> void:
 	var needed := {}
 	for entry in FighterView.STATE_ANIMS.values():
 		needed[entry[0]] = true
 	for move in def.moves:
 		needed[move.animation_name] = true
-	var missing := needed.keys().filter(func(n): return not library.has_animation(n))
-	if missing.is_empty():
-		print("%s: all animations present ✓" % id)
-	else:
+	var own: Array = needed.keys().filter(func(n): return recorded.has(n))
+	var borrowed: Array = needed.keys().filter(func(n): return not recorded.has(n) and library.has_animation(n))
+	var missing: Array = needed.keys().filter(func(n): return not library.has_animation(n))
+	print("%s: recorded %d/%d%s" % [id, own.size(), needed.size(), (": " + ", ".join(own)) if not own.is_empty() else ""])
+	if not borrowed.is_empty():
+		print("%s: borrowed (anims/): %s" % [id, ", ".join(borrowed)])
+	if not missing.is_empty():
 		print("%s: missing (will fall back to idle): %s" % [id, ", ".join(missing)])
