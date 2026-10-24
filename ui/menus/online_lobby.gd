@@ -30,6 +30,10 @@ func _ready() -> void:
 	column.add_child(MenuStyle.label("ONLINE", 22, MenuStyle.ACCENT))
 	var me := CharacterRegistry.get_def(Game.p1_id)
 	column.add_child(MenuStyle.label("You play: %s" % (me.display_name if me else Game.p1_id), 34))
+	var ranked := MenuStyle.label("Ranked as %s if your opponent is logged in too. Leaving a ranked match early counts as a loss." % Account.username()
+		if Account.is_logged_in() else "Unranked: log in (top-right menu on the title screen) to play ranked.", 18)
+	ranked.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(ranked)
 
 	var host_row := HBoxContainer.new()
 	host_row.add_theme_constant_override("separation", 16)

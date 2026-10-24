@@ -1,14 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { resolveStaleMatches, REPORT_WINDOW_MS } from "../src/matches.js";
+import { EXPIRE_AFTER_MS, resolveStaleMatches, REPORT_WINDOW_MS } from "../src/matches.js";
 import { call, signup, useTestApp } from "./helpers.js";
 
 const ctx = useTestApp();
 
-async function twoPlayers() {
+async function twoPlayers({ join = true } = {}) {
   const host = await signup(ctx.app, "Host");
   const guest = await signup(ctx.app, "Guest");
   const created = await call(ctx.app, "POST", "/matches", { opponent: "guest", my_character: "kael", opponent_character: "mira" }, host.access_token);
   expect(created.status).toBe(201);
+  if (join) expect((await call(ctx.app, "POST", `/matches/${created.body.match_id}/join`, undefined, guest.access_token)).status).toBe(200);
   return { host: host.access_token, guest: guest.access_token, id: created.body.match_id as string };
 }
 
@@ -50,6 +51,21 @@ describe("ranked matches", () => {
     const later = new Date(Date.now() + REPORT_WINDOW_MS + 1000);
     expect(await resolveStaleMatches(ctx.db, later)).toMatchObject({ confirmed: 1 });
     expect(await profile("guest")).toMatchObject({ games_played: 1, losses: 1 });
+  });
+
+  it("a match the opponent never joined can't be won by reporting alone", async () => {
+    const { host, id } = await twoPlayers({ join: false });
+    await call(ctx.app, "POST", `/matches/${id}/result`, { result: "p1" }, host);
+    expect(await resolveStaleMatches(ctx.db, new Date(Date.now() + REPORT_WINDOW_MS + 1000))).toMatchObject({ confirmed: 0 });
+    expect(await resolveStaleMatches(ctx.db, new Date(Date.now() + EXPIRE_AFTER_MS + 1000))).toMatchObject({ expired: 1 });
+    expect((await profile("guest")).games_played).toBe(0);
+  });
+
+  it("only the invited player can join", async () => {
+    const { host, id } = await twoPlayers({ join: false });
+    const outsider = await signup(ctx.app, "Outsider");
+    expect((await call(ctx.app, "POST", `/matches/${id}/join`, undefined, outsider.access_token)).status).toBe(403);
+    expect((await call(ctx.app, "POST", `/matches/${id}/join`, undefined, host)).status).toBe(403);
   });
 
   it("only the two players can report, once each", async () => {

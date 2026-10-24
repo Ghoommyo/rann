@@ -9,7 +9,7 @@ config/name="Rann"
 config/description="2.5D fighting game"
 run/main_scene="res://ui/menus/boot.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
-config/version="0.5.0"
+config/version="0.6.0"
 config/icon="res://icon.svg"
 boot_splash/bg_color=Color(0.08, 0.06, 0.14, 1)
 

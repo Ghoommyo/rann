@@ -10,7 +10,7 @@ extends Node
 enum Mode { VERSUS_CPU, LOCAL_VERSUS, TRAINING, ONLINE }
 
 ## Bump when gameplay changes. Online players must have the same version.
-const GAME_VERSION := "0.5.0"
+const GAME_VERSION := "0.6.0"
 
 const MAIN_MENU := "res://ui/menus/main_menu.tscn"
 const CHARACTER_SELECT := "res://ui/menus/character_select.tscn"
@@ -50,6 +50,8 @@ func _ready() -> void:
 	if started_from_cli():
 		mode = Mode.ONLINE
 		p1_id = cli.character if cli.character != "" else ("kael" if cli.host else "mira")
+		if Account.has_saved_session():
+			await Account.restore()  # log in first, so the match can be ranked
 		_change_scene.call_deferred(ONLINE_LOBBY)
 
 

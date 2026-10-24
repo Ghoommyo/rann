@@ -4,7 +4,9 @@
 //  - Reports disagree       → disputed, nothing changes.
 //  - Only one report after REPORT_WINDOW (the other player quit or lost
 //    connection) → that report counts, so leaving a lost match still loses.
-//  - No report after EXPIRE_AFTER → expired.
+//    Only for matches player 2 joined, so nobody can be put in a match
+//    they never played.
+//  - Still pending after EXPIRE_AFTER → expired.
 import type pg from "pg";
 import { transaction, type Db } from "./db.js";
 import { badRequest, conflict, forbidden, notFound } from "./errors.js";
@@ -21,6 +23,7 @@ export interface MatchRow {
   player1_id: string;
   player2_id: string;
   status: "pending" | "confirmed" | "disputed" | "expired";
+  joined_at: Date | null;
   result: Result | null;
   p1_rating_change: number | null;
   p2_rating_change: number | null;
@@ -36,6 +39,18 @@ export async function createMatch(db: Db, hostId: string, opponentUsername: stri
     [hostId, opponent.id, p1Character, p2Character],
   );
   return created[0]!.id;
+}
+
+/** Player 2 confirms they're in the match the host opened. */
+export async function joinMatch(db: Db, matchId: string, userId: string): Promise<MatchRow> {
+  const { rows } = await db.query<MatchRow>(
+    "UPDATE matches SET joined_at = coalesce(joined_at, now()) WHERE id = $1 AND player2_id = $2 RETURNING *",
+    [matchId, userId],
+  );
+  if (rows[0]) return rows[0];
+  const { rows: existing } = await db.query<MatchRow>("SELECT * FROM matches WHERE id = $1", [matchId]);
+  if (!existing[0]) throw notFound("No such match.");
+  throw forbidden("not_a_player", "Only the invited player can join this match.");
 }
 
 export async function submitReport(db: Db, matchId: string, userId: string, result: Result): Promise<MatchRow> {
@@ -65,7 +80,7 @@ export async function resolveStaleMatches(db: Db, now = new Date()): Promise<{ c
   const expireCutoff = new Date(now.getTime() - EXPIRE_AFTER_MS);
   const { rows: oneReport } = await db.query<{ id: string }>(
     `SELECT m.id FROM matches m JOIN match_reports r ON r.match_id = m.id
-     WHERE m.status = 'pending'
+     WHERE m.status = 'pending' AND m.joined_at IS NOT NULL
      GROUP BY m.id HAVING count(*) = 1 AND max(r.created_at) < $1`,
     [reportCutoff],
   );
@@ -81,9 +96,7 @@ export async function resolveStaleMatches(db: Db, now = new Date()): Promise<{ c
     });
   }
   const expired = await db.query(
-    `UPDATE matches m SET status = 'expired', resolved_at = now()
-     WHERE m.status = 'pending' AND m.created_at < $1
-       AND NOT EXISTS (SELECT 1 FROM match_reports r WHERE r.match_id = m.id)`,
+    "UPDATE matches SET status = 'expired', resolved_at = now() WHERE status = 'pending' AND created_at < $1",
     [expireCutoff],
   );
   return { confirmed, expired: expired.rowCount ?? 0 };

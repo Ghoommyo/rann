@@ -29,7 +29,12 @@ var _path := PATH
 
 
 func _ready() -> void:
-	load_session()
+	# --session=NAME keeps a separate login, e.g. to test two accounts in two
+	# game windows on one computer.
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--session="):
+			_path = "user://session_%s.cfg" % arg.trim_prefix("--session=").validate_filename()
+	load_session(_path)
 
 
 func is_logged_in() -> bool:

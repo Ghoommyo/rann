@@ -1,9 +1,10 @@
-// Ranked online matches: the host opens one, both players report the result.
+// Ranked online matches: the host opens one, the opponent joins it, both
+// players report the result.
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { parse, requireUserId, type Deps } from "../app.js";
 import { forbidden, notFound, unauthorized } from "../errors.js";
-import { createMatch, submitReport, type MatchRow } from "../matches.js";
+import { createMatch, joinMatch, submitReport, type MatchRow } from "../matches.js";
 import { findUserById } from "../users.js";
 
 const idSchema = z.object({ id: z.uuid("No such match.") });
@@ -37,6 +38,12 @@ export function matchRoutes({ db }: Deps) {
       const id = await createMatch(db, userId, body.opponent, body.my_character, body.opponent_character);
       reply.status(201);
       return { match_id: id };
+    });
+
+    app.post("/:id/join", async (req) => {
+      const userId = await requireUserId(req);
+      const { id } = parse(idSchema, req.params);
+      return view(await joinMatch(db, id, userId), userId);
     });
 
     app.post("/:id/result", async (req) => {

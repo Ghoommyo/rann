@@ -16,3 +16,13 @@ func test_rejects_garbage():
 	assert_eq(NetMessages.decode(PackedByteArray([1, 2, 3])), [])
 	assert_eq(NetMessages.decode(var_to_bytes("hello")), [])
 	assert_eq(NetMessages.decode(var_to_bytes([999])), [], "unknown type")
+
+
+func test_hello_carries_the_username():
+	var msg := NetMessages.decode(NetMessages.encode(NetMessages.Type.HELLO, ["0.6.0", "abc", "kael", "arjun"]))
+	assert_eq(msg[4], "arjun")
+
+
+func test_ranked_message_round_trip():
+	var msg := NetMessages.decode(NetMessages.encode(NetMessages.Type.RANKED, [3, "6f1c-uuid"]))
+	assert_eq(msg, [NetMessages.Type.RANKED, 3, "6f1c-uuid"])
