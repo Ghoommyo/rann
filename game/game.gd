@@ -12,10 +12,17 @@ enum Mode { VERSUS_CPU, LOCAL_VERSUS, TRAINING, ONLINE }
 ## Bump when gameplay changes. Online players must have the same version.
 const GAME_VERSION := "0.6.0"
 
+## The loading screen before every fight. It's also where an ad will go,
+## so it stays up for LOADING_SECONDS even when loading is faster.
+## LOADING_SKIPPABLE shows a "Skip" button once the fight has loaded.
+const LOADING_SECONDS := 60.0
+const LOADING_SKIPPABLE := false
+
 const MAIN_MENU := "res://ui/menus/main_menu.tscn"
 const CHARACTER_SELECT := "res://ui/menus/character_select.tscn"
 const ONLINE_LOBBY := "res://ui/menus/online_lobby.tscn"
 const FIGHT := "res://scenes/fight.tscn"
+const LOADING := "res://ui/menus/loading_screen.tscn"
 const LOGIN := "res://ui/menus/login.tscn"
 const SIGNUP := "res://ui/menus/signup.tscn"
 const FORGOT_PASSWORD := "res://ui/menus/forgot_password.tscn"
@@ -38,7 +45,9 @@ var online: OnlineConnection
 ## Command-line options for testing online play without menus, e.g.
 ##   godot --path . -- --net-host --net-bot --net-frames=1800
 ##   godot --path . -- --net-join=127.0.0.1 --net-lag=120 --net-bot --net-frames=1800
-var cli := {"host": false, "join": "", "lag": 0, "bot": false, "frames": 0, "character": "", "delay": 2}
+## --loading=SECONDS changes how long the loading screen stays (e.g. 0).
+var cli := {"host": false, "join": "", "lag": 0, "bot": false, "frames": 0, "character": "", "delay": 2,
+	"loading": -1.0}
 
 var _data_hash := ""
 
@@ -93,8 +102,14 @@ func go_to_online_lobby() -> void:
 	_change_scene(ONLINE_LOBBY)
 
 
+## Goes to the fight, through the loading screen.
 func start_fight() -> void:
-	_change_scene(FIGHT)
+	_change_scene(LOADING)
+
+
+## How long the loading screen stays up.
+func loading_seconds() -> float:
+	return cli.loading if cli.loading >= 0.0 else LOADING_SECONDS
 
 
 func close_online() -> void:
@@ -125,3 +140,4 @@ func _parse_command_line() -> void:
 			"net-frames": cli.frames = int(value)
 			"net-char": cli.character = value
 			"net-delay": cli.delay = int(value)
+			"loading": cli.loading = maxf(float(value), 0.0)
