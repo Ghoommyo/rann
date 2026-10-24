@@ -69,7 +69,7 @@ func test_cpu_is_deterministic():
 
 
 func test_cpu_vs_cpu_finishes_a_match():
-	for level in [CpuOpponent.Level.EASY, CpuOpponent.Level.HARD]:
+	for level in [CpuOpponent.MIN_LEVEL, CpuOpponent.Level.NORMAL, CpuOpponent.MAX_LEVEL]:
 		var s := FightState.create(defs, true)
 		var cpu1 := CpuOpponent.new(level, 5)
 		var cpu2 := CpuOpponent.new(level, 6)
@@ -84,3 +84,24 @@ func test_cpu_vs_cpu_finishes_a_match():
 		assert_eq(s.phase, FightState.Phase.MATCH_OVER, "level %d match finished" % level)
 		assert_gt(hits, 10, "level %d CPUs actually fight" % level)
 		gut.p("level %d: %d hits, wins %s, %d frames" % [level, hits, s.wins, s.frame])
+
+
+## Higher levels react faster and defend, punish and combo more.
+func test_levels_get_stronger():
+	for level in range(CpuOpponent.MIN_LEVEL, CpuOpponent.MAX_LEVEL):
+		var cpu := CpuOpponent.new(level)
+		var next := CpuOpponent.new(level + 1)
+		assert_lt(next.reaction_frames, cpu.reaction_frames, "level %d reacts faster" % (level + 1))
+		for key in ["block_chance", "punish_chance", "combo_chance", "aggression", "throw_break_chance"]:
+			assert_gt(next.get(key), cpu.get(key), "level %d: %s goes up" % [level + 1, key])
+
+
+func test_level_is_clamped():
+	assert_eq(CpuOpponent.new(-3).reaction_frames, CpuOpponent.new(0).reaction_frames)
+	assert_eq(CpuOpponent.new(99).reaction_frames, CpuOpponent.new(10).reaction_frames)
+
+
+func test_level_names():
+	assert_eq(CpuOpponent.level_name(0), "Beginner")
+	assert_eq(CpuOpponent.level_name(5), "Normal")
+	assert_eq(CpuOpponent.level_name(10), "Master")

@@ -2,7 +2,7 @@
 ## appear here without any changes to this screen.
 ##
 ## Flow: P1 picks, then P2 picks (the CPU / training dummy is picked by P1).
-## In Versus CPU, a difficulty row is shown.
+## In Versus CPU, a difficulty row (0–10) is shown.
 extends Control
 
 var _roster: Array[CharacterDef] = []
@@ -12,7 +12,9 @@ var _cards: GridContainer
 var _rows := 1
 var _info: Label
 var _level_row: HBoxContainer
-var _level_buttons: Array[Button] = []
+var _level_label: Label
+var _level_down: Button
+var _level_up: Button
 
 
 func _ready() -> void:
@@ -56,11 +58,14 @@ func _ready() -> void:
 	_level_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	_level_row.add_theme_constant_override("separation", 12)
 	_level_row.add_child(MenuStyle.label("CPU:", 22))
-	for level in ["Easy", "Normal", "Hard"]:
-		var index := _level_buttons.size()
-		var b := MenuStyle.button(level, func(): _set_level(index), 140)
-		_level_row.add_child(b)
-		_level_buttons.append(b)
+	_level_down = MenuStyle.button("−", func(): _set_level(Game.cpu_level - 1), 80)
+	_level_row.add_child(_level_down)
+	_level_label = MenuStyle.label("", 26)
+	_level_label.custom_minimum_size.x = 220
+	_level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_level_row.add_child(_level_label)
+	_level_up = MenuStyle.button("+", func(): _set_level(Game.cpu_level + 1), 80)
+	_level_row.add_child(_level_up)
 	_level_row.visible = Game.mode == Game.Mode.VERSUS_CPU
 	column.add_child(_level_row)
 	_set_level(Game.cpu_level)
@@ -111,9 +116,14 @@ func _pick(def: CharacterDef) -> void:
 
 
 func _set_level(level: int) -> void:
-	Game.cpu_level = level
-	for i in _level_buttons.size():
-		_level_buttons[i].modulate = Color.WHITE if i == level else Color(1, 1, 1, 0.45)
+	level = clampi(level, CpuOpponent.MIN_LEVEL, CpuOpponent.MAX_LEVEL)
+	_level_label.text = "%d · %s" % [level, CpuOpponent.level_name(level)]
+	_level_down.modulate.a = 0.35 if level == CpuOpponent.MIN_LEVEL else 1.0
+	_level_up.modulate.a = 0.35 if level == CpuOpponent.MAX_LEVEL else 1.0
+	if level != Game.cpu_level:
+		Game.cpu_level = level
+		Settings.cpu_level = level
+		Settings.save()
 
 
 func _back() -> void:

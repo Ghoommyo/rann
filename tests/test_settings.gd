@@ -9,7 +9,7 @@ func before_each():
 	# Remember the real settings so the test doesn't change them.
 	saved = {"q": Settings.quality, "fps": Settings.fps_limit, "scale": Settings.touch_scale,
 		"layout": Settings.touch_layout.duplicate(true), "haptics": Settings.haptics,
-		"volume": Settings.master_volume, "mode": Settings.touch_mode}
+		"volume": Settings.master_volume, "mode": Settings.touch_mode, "cpu": Settings.cpu_level}
 
 
 func after_each():
@@ -20,6 +20,7 @@ func after_each():
 	Settings.haptics = saved.haptics
 	Settings.master_volume = saved.volume
 	Settings.touch_mode = saved.mode
+	Settings.cpu_level = saved.cpu
 	Settings.load_settings()  # back to the real file path
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(PATH))
 
@@ -31,6 +32,7 @@ func test_round_trip():
 	Settings.touch_scale = 1.3
 	Settings.touch_layout["lp"] = [0.5, 0.5]
 	Settings.haptics = false
+	Settings.cpu_level = 9
 	Settings.save()
 	Settings.reset_touch_layout()
 	Settings.quality = Settings.Quality.HIGH
@@ -40,15 +42,18 @@ func test_round_trip():
 	assert_almost_eq(Settings.touch_scale, 1.3, 0.001)
 	assert_eq(Settings.touch_layout["lp"], [0.5, 0.5])
 	assert_false(Settings.haptics)
+	assert_eq(Settings.cpu_level, 9)
 
 
 func test_bad_values_are_clamped():
 	var cfg := ConfigFile.new()
 	cfg.set_value("graphics", "quality", 99)
+	cfg.set_value("game", "cpu_level", 42)
 	cfg.set_value("controls", "touch_scale", 50.0)
 	cfg.set_value("controls", "touch_layout", {"lp": [5.0, -2.0], "rk": "garbage"})
 	cfg.save(PATH)
 	Settings.load_settings(PATH)
 	assert_eq(Settings.quality, Settings.Quality.HIGH)
 	assert_almost_eq(Settings.touch_scale, 1.6, 0.001)
+	assert_eq(Settings.cpu_level, CpuOpponent.MAX_LEVEL)
 	assert_eq(Settings.touch_layout["lp"], [1.0, 0.0])
