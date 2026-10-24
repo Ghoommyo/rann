@@ -24,7 +24,8 @@ func _ready() -> void:
 	var title := MenuStyle.label("RANN", 110, MenuStyle.ACCENT)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(title)
-	var subtitle := MenuStyle.label("रण · the battlefield", 22)
+	# Browsers have no system fonts for Godot to fall back on for Devanagari.
+	var subtitle := MenuStyle.label("the battlefield" if OS.has_feature("web") else "रण · the battlefield", 22)
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(subtitle)
 	column.add_child(Control.new())  # spacer
@@ -33,7 +34,12 @@ func _ready() -> void:
 	column.add_child(vs_cpu)
 	column.add_child(MenuStyle.button("Local Versus", func(): Game.go_to_character_select(Game.Mode.LOCAL_VERSUS)))
 	column.add_child(MenuStyle.button("Training", func(): Game.go_to_character_select(Game.Mode.TRAINING)))
-	column.add_child(MenuStyle.button("Online", func(): Game.go_to_character_select(Game.Mode.ONLINE)))
+	var online := MenuStyle.button("Online", func(): Game.go_to_character_select(Game.Mode.ONLINE))
+	column.add_child(online)
+	if OS.has_feature("web"):
+		# Browsers can't open the direct (UDP) connections online play uses.
+		online.disabled = true
+		online.text = "Online · coming to the browser soon"
 	column.add_child(MenuStyle.button("Settings", func(): Game.go_to(Game.SETTINGS)))
 	if not OS.has_feature("mobile") and not OS.has_feature("web"):
 		column.add_child(MenuStyle.button("Quit", func(): get_tree().quit()))

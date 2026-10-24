@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Builds the mobile versions of Rann.
+# Builds the mobile and web versions of Rann.
 #
 #   tools/build_mobile.sh android-debug    → build/android/rann-debug.apk (install with adb)
 #   tools/build_mobile.sh android-release  → build/android/rann-release.aab (upload to Play Console)
 #   tools/build_mobile.sh ios              → build/ios/Rann.xcodeproj (open in Xcode, then Archive)
+#   tools/build_mobile.sh web              → build/web/index.html (upload the folder to any web host)
 #
 # The release build needs your signing key in environment variables, so the
 # password is never written into the project (see plans/05-phase-mobile-release.md):
@@ -32,6 +33,11 @@ case "${1:-}" in
     godot --headless --path . --export-release "iOS" build/ios/Rann.xcodeproj
     echo "Open build/ios/Rann.xcodeproj in Xcode, pick your team under Signing, then Product → Archive."
     ;;
+  web)
+    mkdir -p build/web
+    godot --headless --path . --export-release "Web" build/web/index.html
+    echo "Try it: python3 -m http.server 8000 --directory build/web, then open http://localhost:8000"
+    ;;
   *)
-    sed -n '2,12p' "$0"; exit 1 ;;
+    sed -n '2,13p' "$0"; exit 1 ;;
 esac
