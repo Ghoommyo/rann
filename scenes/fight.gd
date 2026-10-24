@@ -20,6 +20,7 @@ var _pending_events: Array[Dictionary] = []  # sim events not yet shown/heard
 # Online
 var _session: RollbackSession
 var _bot: CpuOpponent  # --net-bot: the CPU plays the local side (for testing)
+var _ranked: RankedPlay
 var _match_number := 0
 var _local_rematch := false
 var _remote_rematch := false
@@ -51,6 +52,8 @@ func _ready() -> void:
 				return
 			if Game.cli.bot:
 				_bot = CpuOpponent.new(CpuOpponent.Level.HARD, 100 + (0 if Game.online.is_host else 1))
+			_ranked = RankedPlay.new(Game.online.is_host, Game.online.opponent_name,
+				func(type: NetMessages.Type, payload: Array): _session.send_message(type, payload))
 
 	for i in 2:
 		var view := FighterView.new()
@@ -83,6 +86,7 @@ func _new_match() -> void:
 		_pending_events.clear()
 		_hud.notice = ""
 		_camera.snap(_state)
+		_ranked.begin(_match_number, Game.p1_id, Game.p2_id, Game.online.opponent_name)
 		return
 	_state = FightState.create(_defs, Game.mode != Game.Mode.TRAINING, Game.mode == Game.Mode.TRAINING)
 	_prev_state = _state.copy()
@@ -135,9 +139,14 @@ func _online_tick() -> void:
 				_remote_rematch = true
 			NetMessages.Type.BYE:
 				_on_opponent_left("Your opponent left the match.")
+			NetMessages.Type.RANKED:
+				_ranked.on_message(msg)
 	_session.other_messages.clear()
 	if not Game.online.transport.is_open() or _session.is_timed_out():
 		_on_opponent_left("Connection to your opponent was lost.")
+	# Report the result once it's final: no late input can roll it back.
+	if _state.phase == FightState.Phase.MATCH_OVER and _session.confirmed_frame() >= _state.frame - 1:
+		_ranked.report(_state.match_winner)
 	if _session.desync_frame >= 0:
 		_hud.notice = "Desync at frame %d: the games disagree (report saved)" % _session.desync_frame
 
@@ -161,6 +170,8 @@ func _on_opponent_left(text: String) -> void:
 	if _opponent_gone:
 		return
 	_opponent_gone = true
+	# Leaving a ranked match early counts as a loss for the one who left.
+	_ranked.report(_state.match_winner if _state.phase == FightState.Phase.MATCH_OVER else _session.local_player)
 	_hud.notice = text + " Returning to the menu…"
 	_report_cli_result()
 	get_tree().create_timer(4.0).timeout.connect(Game.go_to_main_menu)
@@ -188,6 +199,7 @@ func _process(delta: float) -> void:
 		_views[i].show_state(_prev_state.fighters[i], _state.fighters[i], alpha, _state.frame)
 	_camera.follow(_state, delta)
 	_overlay.draw_state(_state, _defs)
+	_hud.match_info = _ranked.status_text if _ranked else ""
 	_hud.show_state(_state, _defs, delta, _debug_lines())
 
 	for event in _pending_events:

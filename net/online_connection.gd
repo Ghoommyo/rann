@@ -2,7 +2,7 @@
 ##
 ## Handshake:
 ##   1. both connect (host waits, client joins by IP)
-##   2. both send HELLO [game version, data hash, character]
+##   2. both send HELLO [game version, data hash, character, username]
 ##   3. versions or data differ → refuse with a clear message
 ##   4. the host decides the match and sends START [p1, p2, input delay]
 ## The host is always P1 (left side), the client P2.
@@ -25,6 +25,9 @@ var input_delay := 2
 # Agreed match settings (valid once READY)
 var p1_id := ""
 var p2_id := ""
+## The other player's account name, "" for a guest. Ranked play needs both
+## players logged in (see RankedPlay).
+var opponent_name := ""
 
 var _hello_sent := false
 var _started_ms := 0
@@ -65,7 +68,7 @@ func update() -> void:
 		_hello_sent = true
 		status = Status.HANDSHAKE
 		transport.send(NetMessages.encode(NetMessages.Type.HELLO,
-			[Game.GAME_VERSION, Game.data_hash(), my_character]), true)
+			[Game.GAME_VERSION, Game.data_hash(), my_character, Account.username()]), true)
 
 	var leftover: Array[PackedByteArray] = []
 	for bytes in packets:
@@ -87,9 +90,10 @@ func update() -> void:
 
 
 func _on_hello(msg: Array) -> void:
-	var version: String = msg[1]
-	var data: String = msg[2]
-	var their_character: String = msg[3]
+	var version := str(msg[1]) if msg.size() > 1 else "?"
+	var data := str(msg[2]) if msg.size() > 2 else ""
+	var their_character := str(msg[3]) if msg.size() > 3 else ""
+	opponent_name = str(msg[4]) if msg.size() > 4 else ""
 	if version != Game.GAME_VERSION:
 		_fail("Version mismatch: you have %s, they have %s. Both players need the same version." % [
 			Game.GAME_VERSION, version])

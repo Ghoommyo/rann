@@ -20,7 +20,10 @@ var _timer: Label
 var _message: Label
 var _debug: Label
 var _notice: Label
+var _match_info: Label
 var debug_visible := false
+## A small line under the timer, e.g. "Ranked" in online matches.
+var match_info := ""
 ## A line of text under the timer (online status, disconnects, …).
 var notice := ""
 
@@ -54,6 +57,8 @@ func _ready() -> void:
 	_notice = _label(20)
 	_notice.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_notice.add_theme_color_override("font_color", Color(1.0, 0.85, 0.4))
+	_match_info = _label(16)
+	_match_info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 
 func show_state(state: FightState, defs: Array[CharacterDef], delta: float, debug_lines: PackedStringArray) -> void:
@@ -70,6 +75,9 @@ func show_state(state: FightState, defs: Array[CharacterDef], delta: float, debu
 	_message.text = _message_text(state, defs)
 
 	_notice.text = notice
+	_match_info.text = match_info
+	_match_info.position = Vector2(0, 80)
+	_match_info.size = Vector2(w, 24)
 	_notice.position = Vector2(0, 112)
 	_notice.size = Vector2(w, 30)
 

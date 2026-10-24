@@ -19,23 +19,23 @@
 class_name CpuOpponent
 extends RefCounted
 
-enum Level { EASY, NORMAL, HARD }
+## Difficulty runs from 0 (sparring partner) to 10 (master). These names
+## are shortcuts to points on that scale.
+enum Level { EASY = 2, NORMAL = 5, HARD = 8 }
+
+const MIN_LEVEL := 0
+const MAX_LEVEL := 10
 
 const State := FighterState.State
 
-const PRESETS := {
-	Level.EASY: {
-		"reaction_frames": 26, "block_chance": 0.25, "punish_chance": 0.15,
-		"combo_chance": 0.15, "aggression": 0.35, "throw_break_chance": 0.1,
-	},
-	Level.NORMAL: {
-		"reaction_frames": 16, "block_chance": 0.55, "punish_chance": 0.5,
-		"combo_chance": 0.5, "aggression": 0.5, "throw_break_chance": 0.4,
-	},
-	Level.HARD: {
-		"reaction_frames": 9, "block_chance": 0.85, "punish_chance": 0.9,
-		"combo_chance": 0.9, "aggression": 0.6, "throw_break_chance": 0.75,
-	},
+## Each setting's value at levels 0..10 (index = level).
+const LEVEL_TABLE := {
+	"reaction_frames":    [45, 34, 28, 24, 20, 16, 14, 12, 10, 8, 6],
+	"block_chance":       [0.0, 0.10, 0.20, 0.30, 0.42, 0.55, 0.65, 0.75, 0.85, 0.92, 0.97],
+	"punish_chance":      [0.0, 0.05, 0.12, 0.22, 0.35, 0.50, 0.62, 0.75, 0.88, 0.95, 1.0],
+	"combo_chance":       [0.0, 0.08, 0.15, 0.25, 0.38, 0.50, 0.62, 0.75, 0.88, 0.95, 1.0],
+	"aggression":         [0.15, 0.25, 0.33, 0.40, 0.45, 0.50, 0.53, 0.56, 0.60, 0.63, 0.66],
+	"throw_break_chance": [0.0, 0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.62, 0.75, 0.85, 0.95],
 }
 
 ## Frames before the CPU "notices" an opponent's attack. Humans react in
@@ -63,10 +63,23 @@ var _break_decided_for := -1
 
 
 func _init(level: int = Level.NORMAL, seed_value := 1) -> void:
-	var preset: Dictionary = PRESETS[level]
-	for key in preset:
-		set(key, preset[key])
+	level = clampi(level, MIN_LEVEL, MAX_LEVEL)
+	for key in LEVEL_TABLE:
+		set(key, LEVEL_TABLE[key][level])
 	_rng.seed = seed_value
+
+
+## A word for a difficulty level, shown next to its number.
+static func level_name(level: int) -> String:
+	if level <= 1:
+		return "Beginner"
+	if level <= 3:
+		return "Easy"
+	if level <= 6:
+		return "Normal"
+	if level <= 8:
+		return "Hard"
+	return "Expert" if level == 9 else "Master"
 
 
 ## Returns this frame's input for fighter `me` (0 = P1, 1 = P2).

@@ -30,6 +30,9 @@ func _ready() -> void:
 	column.add_child(_slider_row("Button size", Settings.touch_scale, 0.6, 1.6, _set_touch_scale))
 	column.add_child(_choice_row("Vibration", ["Off", "On"], 1 if Settings.haptics else 0, _set_haptics))
 
+	column.add_child(_server_row())
+	column.add_child(_hint("Address of the Rann server, for accounts and ranked matches. On a phone, use your computer's Wi-Fi address, e.g. http://192.168.1.20:8787."))
+
 	var layout := MenuStyle.button("Edit touch layout", _edit_layout, 320)
 	layout.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	column.add_child(layout)
@@ -81,6 +84,21 @@ func _on_choice(index: int, buttons: Array[Button], on_pick: Callable) -> void:
 func _highlight(buttons: Array[Button], index: int) -> void:
 	for j in buttons.size():
 		buttons[j].modulate = Color.WHITE if j == index else Color(1, 1, 1, 0.45)
+
+
+func _server_row() -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 16)
+	var label := MenuStyle.label("Server", 22)
+	label.custom_minimum_size = Vector2(240, 0)
+	row.add_child(label)
+	var field := MenuStyle.text_field(Settings.DEFAULT_API_URL, false, LineEdit.KEYBOARD_TYPE_URL)
+	field.text = Settings.api_url
+	field.custom_minimum_size.x = 520
+	field.text_changed.connect(func(text: String):
+		Settings.api_url = text.strip_edges() if text.strip_edges() != "" else Settings.DEFAULT_API_URL)
+	row.add_child(field)
+	return row
 
 
 func _set_volume(v: float) -> void:
