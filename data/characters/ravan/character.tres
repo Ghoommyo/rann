@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="CharacterDef" format=3]
+
+[ext_resource type="AnimationLibrary" path="res://data/characters/ravan/animations.res" id="1_8rgdw"]
+[ext_resource type="Script" path="res://core/defs/character_def.gd" id="1_def"]
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="2_move"]
+[ext_resource type="PackedScene" path="res://assets/characters/ravan/model.fbx" id="2_uepos"]
+[ext_resource type="Resource" path="res://data/characters/ravan/style.tres" id="3_style"]
+[ext_resource type="Resource" path="res://data/characters/ravan/moves/jab.tres" id="4_jab"]
+[ext_resource type="Resource" path="res://data/characters/ravan/moves/chandrahas_strike.tres" id="5_chandrahas_strike"]
+[ext_resource type="Resource" path="res://data/characters/ravan/moves/lanka_kick.tres" id="6_lanka_kick"]
+[ext_resource type="Resource" path="res://data/characters/ravan/moves/demon_stomp.tres" id="7_demon_stomp"]
+[ext_resource type="Resource" path="res://data/characters/ravan/moves/sweep.tres" id="8_sweep"]
+[ext_resource type="Resource" path="res://data/characters/ravan/moves/kailash_lift.tres" id="9_kailash_lift"]
+[ext_resource type="Resource" path="res://data/characters/ravan/moves/pushpak_dash.tres" id="10_pushpak_dash"]
+[ext_resource type="Resource" path="res://data/characters/ravan/moves/maya_wave.tres" id="11_maya_wave"]
+[ext_resource type="Resource" path="res://data/characters/ravan/moves/dashanan_rage.tres" id="12_dashanan_rage"]
+[ext_resource type="Resource" path="res://data/characters/ravan/moves/throw.tres" id="13_throw"]
+
+[resource]
+script = ExtResource("1_def")
+id = "ravan"
+display_name = "Ravan"
+max_health = 1100
+walk_forward_speed = 32
+walk_back_speed = 26
+stand_height = 1850
+style = ExtResource("3_style")
+description = "Ten-headed demon king. Long, heavy strikes and the Maya Wave; fill DASHANAN for Dashanan Rage."
+color = Color(0.7, 0.15, 0.2, 1)
+model_scene = ExtResource("2_uepos")
+animation_library = ExtResource("1_8rgdw")
+moves = Array[ExtResource("2_move")]([ExtResource("4_jab"), ExtResource("5_chandrahas_strike"), ExtResource("6_lanka_kick"), ExtResource("7_demon_stomp"), ExtResource("8_sweep"), ExtResource("9_kailash_lift"), ExtResource("10_pushpak_dash"), ExtResource("11_maya_wave"), ExtResource("12_dashanan_rage"), ExtResource("13_throw")])

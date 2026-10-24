@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="MoveDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+id = "kailash_lift"
+display_name = "Kailash Lift"
+animation_name = "kailash_lift"
+command = "3+RP"
+startup = 17
+active = 3
+recovery = 28
+hitbox_offset_x = 200
+hitbox_offset_y = 900
+hitbox_width = 550
+hitbox_height = 800
+hit_level = 1
+damage = 75
+hitstun = 30
+blockstun = 15
+pushback = 20
+hitstop = 10
+on_hit = 1

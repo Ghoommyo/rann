@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="MoveDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+id = "thappad"
+display_name = "Thappad"
+animation_name = "thappad"
+command = "RP"
+startup = 13
+active = 2
+recovery = 18
+hitbox_offset_x = 250
+hitbox_offset_y = 1300
+hitbox_width = 700
+hitbox_height = 250
+hit_level = 0
+damage = 65
+hitstun = 26
+blockstun = 17
+pushback = 36
+hitstop = 8
+cancels_into = Array[String](["belt_whip"])

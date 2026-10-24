@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="MoveDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+id = "dabangg_slowmo"
+display_name = "Dabangg Slow-Mo"
+animation_name = "dabangg_slowmo"
+command = "236+LP+RP"
+startup = 10
+active = 4
+recovery = 34
+hitbox_offset_x = 250
+hitbox_offset_y = 900
+hitbox_width = 800
+hitbox_height = 700
+hit_level = 1
+damage = 230
+hitstun = 40
+blockstun = 20
+pushback = 60
+hitstop = 30
+on_hit = 2
+forward_speed = 40
+meter_cost = 1000

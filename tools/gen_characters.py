@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
-"""Generates the starting roster's .tres files (Kael and Mira).
+"""Generates characters' .tres files from the dicts below.
 
 Why a script: writing 20+ resource files by hand is error-prone. The script
 was used once to create the files; after that, edit the .tres files directly
 in the Godot inspector. Running it again OVERWRITES them.
 
-    python3 tools/gen_characters.py
+    python3 tools/gen_characters.py tulbul_pandey bogembo   # only these ids
+    python3 tools/gen_characters.py --all                   # every character
 
 Enum values: HitLevel HIGH=0 MID=1 LOW=2 THROW=3; OnHit NONE=0 LAUNCH=1 KNOCKDOWN=2.
 Frame advantage = stun - (total - startup), total = startup - 1 + active + recovery.
 """
 import os
+import sys
 
 ROOT = os.path.join(os.path.dirname(__file__), "..", "data", "characters")
 
@@ -60,10 +62,104 @@ MIRA = dict(
     ],
 )
 
+# Parody of Chulbul Pandey (Dabangg). Zoner/counter: long pokes, a belt whip, parries.
+TULBUL = dict(
+    id="tulbul_pandey", display_name="Tulbul Pandey", color=(0.76, 0.65, 0.42),
+    description="Swaggering cop. Long pokes and a belt whip keep you out; tap forward to parry. Darr nahi lagta… swag lagta hai.",
+    stats=dict(max_health=1000, walk_forward_speed=36, walk_back_speed=30),
+    style=[("parry", dict(window_frames=6, cooldown_frames=40)),
+           ("meter", dict(display_name="SWAG", max_value=1000, gain_on_hit=60, gain_on_block=30, gain_on_damage_taken=40))],
+    moves=[
+        ("jab", "Quick Jab", "LP", 10, 2, 14, (250, 1300, 550, 250), 0, 48, 23, 16, 24, 6, dict(cancels=["thappad"])),       # +8 / +1
+        ("thappad", "Thappad", "RP", 13, 2, 18, (250, 1300, 700, 250), 0, 65, 26, 17, 36, 8, dict(cancels=["belt_whip"])),  # +7 / -2
+        ("police_boot", "Police Boot", "RK", 15, 3, 20, (250, 700, 800, 400), 1, 85, 26, 18, 45, 10, {}),                  # +4 / -4
+        ("lathi_poke", "Lathi Poke", "2+LK", 13, 3, 20, (250, 0, 750, 350), 2, 40, 24, 10, 20, 6, dict(low_profile=True)), # +2 / -12
+        ("sweep", "Sweep", "2+RK", 19, 4, 30, (250, 0, 800, 300), 2, 75, 30, 10, 30, 10, dict(low_profile=True, on_hit=2)),
+        ("buckle_uppercut", "Belt-Buckle Uppercut", "3+RP", 16, 3, 27, (200, 900, 500, 800), 1, 60, 30, 15, 20, 10, dict(on_hit=1)),  # launcher, -14
+        ("belt_whip", "Belt Whip", "236+RP", 20, 4, 22, (300, 1000, 1000, 300), 1, 90, 30, 22, 40, 10, {}),               # zoning tool, -3
+        ("chashma_flip", "Chashma Flip", "214+LP", 1, 0, 20, (0, 0, 0, 0), 1, 0, 0, 0, 0, 0, dict(cancels=["belt_whip"])), # taunt
+        ("dabangg_slowmo", "Dabangg Slow-Mo", "236+LP+RP", 10, 4, 34, (250, 900, 800, 700), 1, 230, 40, 20, 60, 30,
+         dict(forward_speed=40, on_hit=2, meter_cost=1000)),                                                               # super
+        ("throw", "Cop Arrest", "LP+LK", 12, 2, 28, (200, 800, 450, 700), 3, 120, 0, 0, 40, 8, dict(throw_break=1)),
+    ],
+)
+
+# Parody of Mogambo (Mr. India). Boss grappler: heavy hits, charge rush, unbreakable command grabs.
+BOGEMBO = dict(
+    id="bogembo", display_name="Bogembo", color=(0.75, 0.6, 0.15),
+    description="Supervillain boss. Slow and heavy; charge back for his Henchman Charge, and fear the Tezaab Drop. Bogembo khush hua!",
+    stats=dict(max_health=1150, walk_forward_speed=30, walk_back_speed=24, stand_height=1850, hurtbox_half_width=380),
+    style=[("charge", dict(charge_frames=30, grace_frames=8)),
+           ("meter", dict(display_name="KHUSH", max_value=1000, gain_on_hit=70, gain_on_block=30, gain_on_damage_taken=50))],
+    moves=[
+        ("backhand", "Backhand", "LP", 11, 2, 15, (250, 1300, 500, 250), 0, 55, 23, 16, 24, 6, dict(cancels=["tyrant_fist"])),  # +7 / 0
+        ("tyrant_fist", "Tyrant Fist", "RP", 16, 3, 22, (250, 1250, 650, 300), 0, 95, 27, 17, 45, 10, {}),                    # +3 / -7
+        ("throne_kick", "Throne Kick", "RK", 16, 3, 22, (250, 700, 700, 400), 1, 95, 26, 16, 55, 10, {}),                     # +2 / -8
+        ("shin_stomp", "Shin Stomp", "2+LK", 14, 3, 20, (250, 0, 550, 350), 2, 50, 24, 10, 20, 6, {}),                        # +2 / -12
+        ("robe_sweep", "Robe Sweep", "2+RK", 20, 4, 30, (250, 0, 750, 300), 2, 90, 30, 10, 30, 10, dict(on_hit=2)),
+        ("overlord_uppercut", "Overlord Uppercut", "3+RP", 17, 3, 28, (200, 900, 550, 800), 1, 75, 30, 15, 20, 10, dict(on_hit=1)),  # launcher, -15
+        ("henchman_charge", "Henchman Charge", "6+RP", 14, 4, 24, (250, 1000, 650, 500), 1, 110, 30, 20, 70, 12,
+         dict(charge=True, forward_speed=50)),                                                                             # [4]6+RP, -7
+        ("tezaab_drop", "Tezaab Drop", "4+LP+RP", 10, 2, 40, (200, 800, 400, 700), 3, 180, 0, 0, 40, 12,
+         dict(throw_break=0, throw_duration=60)),                                                                          # unbreakable
+        ("laser_sweep", "Laser Sweep", "236+RK", 26, 6, 26, (300, 0, 1200, 250), 2, 70, 28, 12, 30, 10, dict(on_hit=2)),   # -19
+        ("khush_hua", "Khush Hua!", "236+LP+RP", 8, 2, 40, (200, 800, 500, 700), 3, 300, 0, 0, 40, 20,
+         dict(throw_break=0, throw_duration=80, meter_cost=1000)),                                                          # grab super
+        ("throw", "Throw", "LP+LK", 12, 2, 28, (200, 800, 450, 700), 3, 110, 0, 0, 40, 8, dict(throw_break=1)),
+    ],
+)
+
+# Demon king of Lanka (Ramayana). Heavy power fighter with long reach.
+RAVAN = dict(
+    id="ravan", display_name="Ravan", color=(0.7, 0.15, 0.2),
+    description="Ten-headed demon king. Long, heavy strikes and the Maya Wave; fill DASHANAN for Dashanan Rage.",
+    stats=dict(max_health=1100, walk_forward_speed=32, walk_back_speed=26, stand_height=1850),
+    style=[("meter", dict(display_name="DASHANAN", max_value=1000, gain_on_hit=70, gain_on_block=25, gain_on_damage_taken=50))],
+    moves=[
+        ("jab", "Asura Jab", "LP", 11, 2, 15, (250, 1300, 550, 250), 0, 55, 23, 16, 24, 6, dict(cancels=["chandrahas_strike"])),  # +7 / 0
+        ("chandrahas_strike", "Chandrahas Strike", "RP", 15, 3, 22, (250, 1200, 800, 300), 0, 90, 27, 17, 40, 10, {}),         # +3 / -7
+        ("lanka_kick", "Lanka Kick", "RK", 16, 3, 22, (250, 700, 750, 400), 1, 95, 26, 16, 50, 10, {}),                        # +2 / -8
+        ("demon_stomp", "Demon Stomp", "2+LK", 14, 3, 20, (250, 0, 600, 350), 2, 50, 24, 10, 20, 6, {}),                       # +2 / -12
+        ("sweep", "Sweep", "2+RK", 20, 4, 30, (250, 0, 800, 300), 2, 85, 30, 10, 30, 10, dict(on_hit=2)),
+        ("kailash_lift", "Kailash Lift", "3+RP", 17, 3, 28, (200, 900, 550, 800), 1, 75, 30, 15, 20, 10, dict(on_hit=1)),     # launcher, -15
+        ("pushpak_dash", "Pushpak Dash", "236+RP", 16, 4, 24, (250, 1100, 700, 400), 1, 105, 30, 18, 50, 12, dict(forward_speed=50)),  # -9
+        ("maya_wave", "Maya Wave", "236+RK", 24, 6, 24, (300, 600, 1100, 500), 1, 80, 28, 18, 40, 10, {}),                    # -11
+        ("dashanan_rage", "Dashanan Rage", "236+LP+RP", 10, 6, 34, (250, 800, 900, 800), 1, 240, 40, 20, 60, 28,
+         dict(on_hit=2, meter_cost=1000)),                                                                                 # super
+        ("throw", "Throw", "LP+LK", 12, 2, 28, (200, 800, 450, 700), 3, 120, 0, 0, 40, 8, dict(throw_break=1)),
+    ],
+)
+
+# Immortal warrior (Mahabharata). Fast rushdown with a parry.
+ASWASHTHAMA = dict(
+    id="aswashthama", display_name="Aswashthama", color=(0.3, 0.55, 0.9),
+    description="Immortal warrior. Fast strings and dashing attacks; tap forward to parry. Fill MANI for Narayanastra.",
+    stats=dict(max_health=950, walk_forward_speed=46, walk_back_speed=34),
+    style=[("parry", dict(window_frames=5, cooldown_frames=40)),
+           ("meter", dict(display_name="MANI", max_value=1000, gain_on_hit=65, gain_on_block=25, gain_on_damage_taken=40))],
+    moves=[
+        ("jab", "Quick Jab", "LP", 9, 2, 13, (250, 1300, 500, 250), 0, 45, 22, 14, 24, 6, dict(cancels=["twin_strike"])),      # +8 / 0
+        ("twin_strike", "Twin Strike", "RP", 11, 2, 16, (250, 1250, 600, 250), 0, 60, 24, 15, 30, 8, dict(cancels=["astra_rush"])),  # +7 / -2
+        ("drona_kick", "Drona's Kick", "RK", 13, 3, 19, (250, 700, 700, 400), 1, 80, 26, 15, 40, 10, {}),                      # +5 / -6
+        ("low_slash", "Low Slash", "2+LK", 11, 3, 18, (250, 0, 600, 350), 2, 40, 23, 10, 20, 6, dict(low_profile=True)),       # +3 / -10
+        ("sweep", "Sweep", "2+RK", 17, 4, 28, (250, 0, 750, 300), 2, 70, 30, 10, 30, 10, dict(low_profile=True, on_hit=2)),
+        ("rising_arrow", "Rising Arrow", "3+RP", 14, 3, 25, (200, 900, 500, 800), 1, 55, 30, 15, 20, 10, dict(on_hit=1)),    # launcher, -12
+        ("astra_rush", "Astra Rush", "236+RP", 14, 4, 22, (250, 1100, 650, 400), 1, 90, 30, 18, 45, 12, dict(forward_speed=55)),  # -7
+        ("night_raid", "Night Raid", "236+RK", 16, 4, 24, (250, 0, 700, 350), 2, 75, 28, 12, 30, 10,
+         dict(forward_speed=50, low_profile=True)),                                                                        # -15
+        ("narayanastra", "Narayanastra", "236+LP+RP", 8, 6, 32, (250, 800, 850, 800), 1, 220, 40, 20, 60, 26,
+         dict(forward_speed=45, on_hit=2, meter_cost=1000)),                                                               # super
+        ("throw", "Throw", "LP+LK", 12, 2, 28, (200, 800, 450, 700), 3, 110, 0, 0, 40, 8, dict(throw_break=2)),
+    ],
+)
+
+ROSTER = {c["id"]: c for c in (KAEL, MIRA, TULBUL, BOGEMBO, RAVAN, ASWASHTHAMA)}
+
 COMPONENT_SCRIPTS = {
     "meter": "res://core/style/meter_component.gd",
     "stance": "res://core/style/stance_component.gd",
     "parry": "res://core/style/parry_component.gd",
+    "charge": "res://core/style/charge_input_component.gd",
 }
 
 
@@ -98,8 +194,12 @@ def write_move(folder, m):
         lines.append(f'required_stance = "{extra["stance"]}"')
     if "enters" in extra:
         lines.append(f'enters_stance = "{extra["enters"]}"')
+    if extra.get("charge"):
+        lines.append("requires_charge = true")
     if "throw_break" in extra:
-        lines.append(f'throw_break_buttons = {extra["throw_break"]}')
+        lines.append(f'throw_break_buttons = {extra["throw_break"]}')  # 0 = unbreakable
+    if "throw_duration" in extra:
+        lines.append(f'throw_duration = {extra["throw_duration"]}')
     with open(os.path.join(folder, "moves", f"{mid}.tres"), "w") as f:
         f.write("\n".join(lines) + "\n")
 
@@ -148,6 +248,14 @@ def write_character(c):
 
 
 if __name__ == "__main__":
-    for character in (KAEL, MIRA):
-        write_character(character)
-        print("wrote", character["id"])
+    # Ids must be named explicitly, so regenerating one character never
+    # overwrites another one's hand-tuned files.
+    args = sys.argv[1:]
+    ids = list(ROSTER) if args == ["--all"] else args
+    unknown = [i for i in ids if i not in ROSTER]
+    if not ids or unknown:
+        sys.exit(f"usage: gen_characters.py <id>... | --all   (ids: {', '.join(ROSTER)})"
+                 + (f"\nunknown: {', '.join(unknown)}" if unknown else ""))
+    for i in ids:
+        write_character(ROSTER[i])
+        print("wrote", i)

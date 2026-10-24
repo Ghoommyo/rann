@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="MoveDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+id = "maya_wave"
+display_name = "Maya Wave"
+animation_name = "maya_wave"
+command = "236+RK"
+startup = 24
+active = 6
+recovery = 24
+hitbox_offset_x = 300
+hitbox_offset_y = 600
+hitbox_width = 1100
+hitbox_height = 500
+hit_level = 1
+damage = 80
+hitstun = 28
+blockstun = 18
+pushback = 40
+hitstop = 10

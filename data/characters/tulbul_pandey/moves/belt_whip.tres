@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="MoveDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+id = "belt_whip"
+display_name = "Belt Whip"
+animation_name = "belt_whip"
+command = "236+RP"
+startup = 20
+active = 4
+recovery = 22
+hitbox_offset_x = 300
+hitbox_offset_y = 1000
+hitbox_width = 1000
+hitbox_height = 300
+hit_level = 1
+damage = 90
+hitstun = 30
+blockstun = 22
+pushback = 40
+hitstop = 10

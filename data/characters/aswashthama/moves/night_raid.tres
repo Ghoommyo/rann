@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="MoveDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+id = "night_raid"
+display_name = "Night Raid"
+animation_name = "night_raid"
+command = "236+RK"
+low_profile = true
+startup = 16
+active = 4
+recovery = 24
+hitbox_offset_x = 250
+hitbox_offset_y = 0
+hitbox_width = 700
+hitbox_height = 350
+hit_level = 2
+damage = 75
+hitstun = 28
+blockstun = 12
+pushback = 30
+hitstop = 10
+forward_speed = 50

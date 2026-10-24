@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="MoveDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+id = "chashma_flip"
+display_name = "Chashma Flip"
+animation_name = "chashma_flip"
+command = "214+LP"
+startup = 1
+active = 0
+recovery = 20
+hitbox_offset_x = 0
+hitbox_offset_y = 0
+hitbox_width = 0
+hitbox_height = 0
+hit_level = 1
+damage = 0
+hitstun = 0
+blockstun = 0
+pushback = 0
+hitstop = 0
+cancels_into = Array[String](["belt_whip"])

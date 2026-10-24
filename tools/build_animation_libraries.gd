@@ -17,11 +17,17 @@
 ## 💡 The sim decides where fighters stand, so the tool removes the hips'
 ## sideways/forward movement from every animation ("root motion"). Up/down
 ## movement is kept, so crouches and jumps still look right.
+##
+## Animations may come from another character (e.g. Kael's anims on Tulbul).
+## Each one records its source skeleton's hip height ("source_hips" metadata);
+## FighterView uses it to fit the hips to whatever model is loaded, so a
+## model can be swapped without rebuilding.
 extends SceneTree
 
 const ASSETS := "res://assets/characters"
 const LOOPING := ["idle", "walk_forward", "walk_back", "crouch"]
 const MODEL_NAMES := ["model.fbx", "model.glb", "model.gltf"]
+const HIPS := "mixamorig_Hips"
 
 
 func _init() -> void:
@@ -61,13 +67,17 @@ func _build_character(id: String) -> void:
 		for file in files:
 			if file.get_extension() not in ["fbx", "glb", "gltf"]:
 				continue
-			var anim := _first_animation("%s/%s" % [anim_folder, file])
+			var anim_path := "%s/%s" % [anim_folder, file]
+			var anim := _first_animation(anim_path)
 			if anim == null:
 				printerr("%s: no animation found in %s" % [id, file])
 				continue
 			var anim_name: String = file.get_basename()
 			anim.loop_mode = Animation.LOOP_LINEAR if anim_name in LOOPING else Animation.LOOP_NONE
 			_lock_root_motion(anim)
+			var source_hips := _hips_height(load(anim_path))
+			if source_hips > 0.0:
+				anim.set_meta("source_hips", source_hips)
 			library.add_animation(anim_name, anim)
 		var library_path := "res://data/characters/%s/animations.res" % id
 		ResourceSaver.save(library, library_path)
@@ -111,6 +121,22 @@ func _lock_root_motion(anim: Animation) -> void:
 		for k in anim.track_get_key_count(t):
 			var v: Vector3 = anim.track_get_key_value(t, k)
 			anim.track_set_key_value(t, k, Vector3(first.x, v.y, first.z))
+
+
+## Rest height of the hips bone in its skeleton's own units (0 if not found).
+func _hips_height(scene: Resource) -> float:
+	if not scene is PackedScene:
+		return 0.0
+	var root: Node = scene.instantiate()
+	var height := 0.0
+	var skeletons := root.find_children("*", "Skeleton3D", true, false)
+	if not skeletons.is_empty():
+		var skeleton: Skeleton3D = skeletons[0]
+		var bone := skeleton.find_bone(HIPS)
+		if bone >= 0:
+			height = skeleton.get_bone_global_rest(bone).origin.y
+	root.free()
+	return height
 
 
 ## Lists the animations the character still needs.
