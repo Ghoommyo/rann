@@ -14,6 +14,9 @@ enum Quality { LOW, MEDIUM, HIGH }
 enum TouchMode { AUTO, ON, OFF }
 
 const PATH := "user://settings.cfg"
+## Where the Rann server (server/) runs. On a phone, use the computer's
+## Wi-Fi address instead, e.g. http://192.168.1.20:8787.
+const DEFAULT_API_URL := "http://localhost:8787"
 
 ## Default touch layout: button → [x, y] as fractions of the screen size.
 const DEFAULT_LAYOUT := {
@@ -29,6 +32,7 @@ var touch_mode := TouchMode.AUTO
 var touch_scale := 1.0         # button size multiplier
 var touch_layout := DEFAULT_LAYOUT.duplicate(true)
 var cpu_level := 5             # Versus CPU difficulty, 0..10
+var api_url := DEFAULT_API_URL # the accounts/ranking server
 
 var _path := PATH
 
@@ -51,6 +55,7 @@ func load_settings(path := PATH) -> void:
 	touch_mode = clampi(cfg.get_value("controls", "touch_mode", touch_mode), 0, TouchMode.size() - 1) as TouchMode
 	touch_scale = clampf(cfg.get_value("controls", "touch_scale", touch_scale), 0.6, 1.6)
 	cpu_level = clampi(cfg.get_value("game", "cpu_level", cpu_level), CpuOpponent.MIN_LEVEL, CpuOpponent.MAX_LEVEL)
+	api_url = str(cfg.get_value("network", "api_url", api_url))
 	var saved_layout = cfg.get_value("controls", "touch_layout", {})
 	if saved_layout is Dictionary:
 		for key in DEFAULT_LAYOUT:
@@ -68,6 +73,7 @@ func save() -> void:
 	cfg.set_value("controls", "touch_scale", touch_scale)
 	cfg.set_value("controls", "touch_layout", touch_layout)
 	cfg.set_value("game", "cpu_level", cpu_level)
+	cfg.set_value("network", "api_url", api_url)
 	cfg.save(_path)
 	apply()
 	changed.emit()

@@ -16,12 +16,21 @@ const MAIN_MENU := "res://ui/menus/main_menu.tscn"
 const CHARACTER_SELECT := "res://ui/menus/character_select.tscn"
 const ONLINE_LOBBY := "res://ui/menus/online_lobby.tscn"
 const FIGHT := "res://scenes/fight.tscn"
+const LOGIN := "res://ui/menus/login.tscn"
+const SIGNUP := "res://ui/menus/signup.tscn"
+const FORGOT_PASSWORD := "res://ui/menus/forgot_password.tscn"
+const PROFILE := "res://ui/menus/profile.tscn"
+const ACCOUNT_SETTINGS := "res://ui/menus/account_settings.tscn"
+const SETTINGS := "res://ui/menus/settings_menu.tscn"
 
 var mode := Mode.VERSUS_CPU
 var p1_id := "kael"
 var p2_id := "mira"
 ## Versus CPU difficulty, 0..10 (remembered in Settings).
 var cpu_level: int = CpuOpponent.Level.NORMAL
+
+## A one-off message for the next screen to show (e.g. "Password changed").
+var notice := ""
 
 ## The connection to the other player in online mode.
 var online: OnlineConnection
@@ -38,7 +47,7 @@ func _ready() -> void:
 	cpu_level = Settings.cpu_level
 	InputRouter.register_default_actions()
 	_parse_command_line()
-	if cli.host or cli.join != "":
+	if started_from_cli():
 		mode = Mode.ONLINE
 		p1_id = cli.character if cli.character != "" else ("kael" if cli.host else "mira")
 		_change_scene.call_deferred(ONLINE_LOBBY)
@@ -58,6 +67,17 @@ func data_hash() -> String:
 func go_to_main_menu() -> void:
 	close_online()
 	_change_scene(MAIN_MENU)
+
+
+## Opens a menu screen, e.g. `Game.go_to(Game.LOGIN)`.
+func go_to(scene: String) -> void:
+	close_online()
+	_change_scene(scene)
+
+
+## Whether the game was started from the command line straight into online play.
+func started_from_cli() -> bool:
+	return cli.host or cli.join != ""
 
 
 func go_to_character_select(new_mode: Mode) -> void:

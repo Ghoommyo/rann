@@ -9,7 +9,7 @@ func before_each():
 	# Remember the real settings so the test doesn't change them.
 	saved = {"q": Settings.quality, "fps": Settings.fps_limit, "scale": Settings.touch_scale,
 		"layout": Settings.touch_layout.duplicate(true), "haptics": Settings.haptics,
-		"volume": Settings.master_volume, "mode": Settings.touch_mode, "cpu": Settings.cpu_level}
+		"volume": Settings.master_volume, "mode": Settings.touch_mode, "cpu": Settings.cpu_level, "api": Settings.api_url}
 
 
 func after_each():
@@ -21,6 +21,7 @@ func after_each():
 	Settings.master_volume = saved.volume
 	Settings.touch_mode = saved.mode
 	Settings.cpu_level = saved.cpu
+	Settings.api_url = saved.api
 	Settings.load_settings()  # back to the real file path
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(PATH))
 
@@ -33,6 +34,7 @@ func test_round_trip():
 	Settings.touch_layout["lp"] = [0.5, 0.5]
 	Settings.haptics = false
 	Settings.cpu_level = 9
+	Settings.api_url = "http://192.168.1.20:8787"
 	Settings.save()
 	Settings.reset_touch_layout()
 	Settings.quality = Settings.Quality.HIGH
@@ -43,6 +45,7 @@ func test_round_trip():
 	assert_eq(Settings.touch_layout["lp"], [0.5, 0.5])
 	assert_false(Settings.haptics)
 	assert_eq(Settings.cpu_level, 9)
+	assert_eq(Settings.api_url, "http://192.168.1.20:8787")
 
 
 func test_bad_values_are_clamped():
