@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { call, signup, useTestApp } from "./helpers.js";
+import { call, lastCode, signup, useTestApp } from "./helpers.js";
 
 const ctx = useTestApp();
 
@@ -33,18 +33,40 @@ describe("settings", () => {
     expect((await call(ctx.app, "POST", "/auth/login", { login: "KaelTheGreat", password: "password123" })).status).toBe(200);
   });
 
-  it("changing the email needs the password", async () => {
+  it("changing the email needs the password and a code sent to the new address", async () => {
     const { access_token } = await signup(ctx.app, "Kael");
+    await signup(ctx.app, "Mira");
     const wrong = await call(ctx.app, "PATCH", "/me/email", { email: "new@example.com", password: "nope" }, access_token);
     expect(wrong.body).toMatchObject({ error: "wrong_password", field: "password" });
-    const ok = await call(ctx.app, "PATCH", "/me/email", { email: "New@Example.com", password: "password123" }, access_token);
-    expect(ok.body.email).toBe("new@example.com");
+    const taken = await call(ctx.app, "PATCH", "/me/email", { email: "mira@example.com", password: "password123" }, access_token);
+    expect(taken.body).toMatchObject({ error: "email_taken", field: "email" });
+
+    const sent = await call(ctx.app, "PATCH", "/me/email", { email: "New@Example.com", password: "password123" }, access_token);
+    expect(sent.body).toEqual({ ok: true, pending_email: "new@example.com" });
+    expect(ctx.mailer.outbox.at(-1)!.to).toBe("new@example.com");
+    expect((await call(ctx.app, "GET", "/me", undefined, access_token)).body.email).toBe("kael@example.com"); // not yet
+
+    const bad = await call(ctx.app, "POST", "/me/email/confirm", { code: "12345" }, access_token);
+    expect(bad.body).toMatchObject({ error: "invalid_input", field: "code" });
+    const ok = await call(ctx.app, "POST", "/me/email/confirm", { code: lastCode("new@example.com") }, access_token);
+    expect(ok.body).toMatchObject({ email: "new@example.com", email_verified: true });
+    expect((await call(ctx.app, "POST", "/auth/login", { login: "new@example.com", password: "password123" })).status).toBe(200);
+  });
+
+  it("changing the password needs a code from the account's email", async () => {
+    const { access_token } = await signup(ctx.app, "Kael");
+    const noCode = await call(ctx.app, "PATCH", "/me/password", { code: "123456", new_password: "brandnew99" }, access_token);
+    expect(noCode.body).toMatchObject({ error: "invalid_code", field: "code" });
+    const sent = await call(ctx.app, "POST", "/me/password/code", undefined, access_token);
+    expect(sent.body).toEqual({ ok: true, email: "kael@example.com" });
+    expect(ctx.mailer.outbox.at(-1)!.to).toBe("kael@example.com");
   });
 
   it("changing the password logs out other devices but keeps this one", async () => {
     const first = await signup(ctx.app, "Kael");
     const other = (await call(ctx.app, "POST", "/auth/login", { login: "Kael", password: "password123" })).body;
-    const res = await call(ctx.app, "PATCH", "/me/password", { current_password: "password123", new_password: "brandnew99" }, first.access_token);
+    await call(ctx.app, "POST", "/me/password/code", undefined, first.access_token);
+    const res = await call(ctx.app, "PATCH", "/me/password", { code: lastCode("kael@example.com"), new_password: "brandnew99" }, first.access_token);
     expect(res.status).toBe(200);
     expect(res.body.refresh_token).toBeTruthy();
     expect((await call(ctx.app, "POST", "/auth/refresh", { refresh_token: other.refresh_token })).status).toBe(401);

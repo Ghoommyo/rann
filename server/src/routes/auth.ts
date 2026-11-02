@@ -1,14 +1,15 @@
-// Sign up, log in, sessions and "forgot password".
+// Sign up (with email verification), log in, sessions and "forgot password".
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { emailSchema, parse, passwordSchema, usernameSchema, type Deps } from "../app.js";
+import { codeSchema, emailSchema, parse, passwordSchema, usernameSchema, type Deps } from "../app.js";
 import { badRequest, conflict, forbidden, unauthorized } from "../errors.js";
 import { hashPassword, verifyPassword } from "../auth/passwords.js";
-import { RESET_CODE_MAX_ATTEMPTS, RESET_CODE_MINUTES, newResetCode, sha256 } from "../auth/tokens.js";
+import { sha256 } from "../auth/tokens.js";
+import { sendCode, useCode } from "../emailCodes.js";
 import { issueTokens, revokeAllSessions } from "../sessions.js";
 import { findUserByLogin, privateProfile, type UserRow } from "../users.js";
 
-const resetCodeHash = (userId: string, code: string) => sha256(`${userId}:${code}`);
+const loginSchema = z.string().trim().min(1, "Enter your username or email.");
 
 export function authRoutes({ db, mailer, authRateLimit }: Deps) {
   // A real hash to verify against when the user doesn't exist, so a wrong
@@ -42,18 +43,39 @@ export function authRoutes({ db, mailer, authRateLimit }: Deps) {
         }
         throw err;
       }
+      // No login yet: the account works once the emailed code is entered
+      // (POST /verify-email).
+      await sendCode(db, mailer, user, "verify_email");
       reply.status(201);
-      return { ...(await issueTokens(app, db, user.id)), user: await privateProfile(db, user) };
+      return { verification_required: true, username: user.username, email: user.email };
+    });
+
+    app.post("/verify-email", limited, async (req) => {
+      const body = parse(z.object({ login: loginSchema, code: codeSchema }), req.body);
+      const user = await findUserByLogin(db, body.login);
+      if (!user || user.email_verified_at) throw badRequest("invalid_code", "That code is wrong or has expired. Request a new one.", "code");
+      await useCode(db, user.id, "verify_email", body.code);
+      const { rows } = await db.query<UserRow>("UPDATE users SET email_verified_at = now(), updated_at = now() WHERE id = $1 RETURNING *", [user.id]);
+      return { ...(await issueTokens(app, db, user.id)), user: await privateProfile(db, rows[0]!) };
+    });
+
+    app.post("/resend-verification", limited, async (req) => {
+      const body = parse(z.object({ login: loginSchema }), req.body);
+      const user = await findUserByLogin(db, body.login);
+      // Same answer either way, so this can't be used to find out who has an account.
+      if (user && !user.email_verified_at) await sendCode(db, mailer, user, "verify_email");
+      return { ok: true };
     });
 
     app.post("/login", limited, async (req) => {
       const body = parse(
-        z.object({ login: z.string().trim().min(1, "Enter your username or email."), password: z.string().min(1, "Enter your password."), reactivate: z.boolean().optional() }),
+        z.object({ login: loginSchema, password: z.string().min(1, "Enter your password."), reactivate: z.boolean().optional() }),
         req.body,
       );
       const user = await findUserByLogin(db, body.login);
       const ok = await verifyPassword(user?.password_hash ?? (await dummyHash), body.password);
       if (!user || !ok) throw unauthorized("Wrong username/email or password.");
+      if (!user.email_verified_at) throw forbidden("email_not_verified", "Confirm your email first: enter the code we emailed you.");
       if (!user.is_active) {
         if (!body.reactivate) throw forbidden("account_deactivated", "This account is deactivated. Log in again to reactivate it.");
         await db.query("UPDATE users SET is_active = true, updated_at = now() WHERE id = $1", [user.id]);
@@ -88,45 +110,23 @@ export function authRoutes({ db, mailer, authRateLimit }: Deps) {
       const user = await findUserByLogin(db, body.email);
       // Same answer whether or not the email exists, so this can't be used
       // to find out who has an account.
-      if (user && user.is_active) {
-        const code = newResetCode();
-        await db.query("UPDATE password_resets SET used_at = now() WHERE user_id = $1 AND used_at IS NULL", [user.id]);
-        await db.query(
-          `INSERT INTO password_resets (user_id, code_hash, expires_at)
-           VALUES ($1, $2, now() + make_interval(mins => $3))`,
-          [user.id, resetCodeHash(user.id, code), RESET_CODE_MINUTES],
-        );
-        await mailer.send({
-          to: user.email,
-          subject: "Your Rann password reset code",
-          text: `Hi ${user.username},\n\nYour code is ${code}. It expires in ${RESET_CODE_MINUTES} minutes.\n\nIf you didn't ask to reset your password, ignore this email.`,
-        });
-      }
+      if (user && user.is_active) await sendCode(db, mailer, user, "reset_password");
       return { ok: true };
     });
 
     app.post("/reset-password", limited, async (req) => {
       const body = parse(
-        z.object({ email: emailSchema, code: z.string().trim().regex(/^\d{6}$/, "The code is 6 digits."), new_password: passwordSchema }),
+        z.object({ email: emailSchema, code: codeSchema, new_password: passwordSchema }),
         req.body,
       );
-      const invalid = () => badRequest("invalid_code", "That code is wrong or has expired. Request a new one.", "code");
       const user = await findUserByLogin(db, body.email);
-      if (!user) throw invalid();
-      const { rows } = await db.query<{ id: string; code_hash: string; attempts: number }>(
-        `SELECT id, code_hash, attempts FROM password_resets
-         WHERE user_id = $1 AND used_at IS NULL AND expires_at > now()
-         ORDER BY created_at DESC LIMIT 1`,
-        [user.id],
+      if (!user) throw badRequest("invalid_code", "That code is wrong or has expired. Request a new one.", "code");
+      await useCode(db, user.id, "reset_password", body.code);
+      // The code arrived by email, so this also confirms the address.
+      await db.query(
+        "UPDATE users SET password_hash = $2, email_verified_at = coalesce(email_verified_at, now()), updated_at = now() WHERE id = $1",
+        [user.id, await hashPassword(body.new_password)],
       );
-      const reset = rows[0];
-      if (!reset || reset.attempts >= RESET_CODE_MAX_ATTEMPTS) throw invalid();
-      if (reset.code_hash !== resetCodeHash(user.id, body.code)) {
-        await db.query("UPDATE password_resets SET attempts = attempts + 1 WHERE id = $1", [reset.id]);
-        throw invalid();
-      }
-      await db.query("UPDATE password_resets SET used_at = now() WHERE id = $1", [reset.id]);
-      await db.query("UPDATE users SET password_hash = $2, updated_at = now() WHERE id = $1", [user.id, await hashPassword(body.new_password)]);
       await revokeAllSessions(db, user.id); // log out everywhere
       return { ok: true };
     });

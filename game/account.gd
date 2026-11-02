@@ -20,6 +20,12 @@ var user: Dictionary = {}
 ## Set once the player picks "Continue as guest", so later launches skip the
 ## login screen.
 var guest := false
+## Who is confirming their email (username or email), between the sign-up or
+## login screen and the "enter the code" screen.
+var pending_login := ""
+## Set when the "enter the code" screen should email a fresh code as it opens
+## (coming from a login, where no code was just sent).
+var pending_send_code := false
 
 var _access_token := ""
 var _access_expires_ms := 0
@@ -78,16 +84,32 @@ func restore() -> Dictionary:
 	return result
 
 
+## Creates the account and emails a code. Nobody is logged in until the code
+## is entered (verify_email).
 func signup(new_username: String, email: String, password: String) -> Dictionary:
 	var result := await Api.send(HTTPClient.METHOD_POST, "/auth/signup",
 		{"username": new_username, "email": email, "password": password})
 	if result.ok:
+		pending_login = new_username
+	return result
+
+
+## `login` is a username or an email. Logs in when the code is right.
+func verify_email(login_name: String, code: String) -> Dictionary:
+	var result := await Api.send(HTTPClient.METHOD_POST, "/auth/verify-email", {"login": login_name, "code": code})
+	if result.ok:
+		pending_login = ""
 		_logged_in(result.data)
 	return result
 
 
+func resend_verification(login_name: String) -> Dictionary:
+	return await Api.send(HTTPClient.METHOD_POST, "/auth/resend-verification", {"login": login_name})
+
+
 ## `login` is a username or an email. A deactivated account answers with the
-## error "account_deactivated" unless `reactivate` is set.
+## error "account_deactivated" unless `reactivate` is set; one whose email
+## isn't confirmed yet with "email_not_verified".
 func login(login_name: String, password: String, reactivate := false) -> Dictionary:
 	var result := await Api.send(HTTPClient.METHOD_POST, "/auth/login",
 		{"login": login_name, "password": password, "reactivate": reactivate})
@@ -128,14 +150,25 @@ func change_username(new_name: String) -> Dictionary:
 	return _take_profile(await call_api(HTTPClient.METHOD_PATCH, "/me/username", {"username": new_name}))
 
 
+## Emails a code to the NEW address; the email changes once
+## confirm_email_change() gets that code.
 func change_email(email: String, password: String) -> Dictionary:
-	return _take_profile(await call_api(HTTPClient.METHOD_PATCH, "/me/email", {"email": email, "password": password}))
+	return await call_api(HTTPClient.METHOD_PATCH, "/me/email", {"email": email, "password": password})
+
+
+func confirm_email_change(code: String) -> Dictionary:
+	return _take_profile(await call_api(HTTPClient.METHOD_POST, "/me/email/confirm", {"code": code}))
+
+
+## Emails a code to the account's address, for change_password().
+func request_password_code() -> Dictionary:
+	return await call_api(HTTPClient.METHOD_POST, "/me/password/code")
 
 
 ## Logs out every other device; this one gets a new session.
-func change_password(current_password: String, new_password: String) -> Dictionary:
+func change_password(code: String, new_password: String) -> Dictionary:
 	var result := await call_api(HTTPClient.METHOD_PATCH, "/me/password",
-		{"current_password": current_password, "new_password": new_password})
+		{"code": code, "new_password": new_password})
 	if result.ok:
 		_take_tokens(result.data)
 	return result

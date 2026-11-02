@@ -1,16 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { call, signup, useTestApp } from "./helpers.js";
+import { call, lastCode, signup, useTestApp } from "./helpers.js";
 
 const ctx = useTestApp();
 
 describe("signup", () => {
-  it("creates an account and logs in", async () => {
+  it("creates an account that works once the emailed code is entered", async () => {
     const res = await call(ctx.app, "POST", "/auth/signup", { username: "Tulbul", email: "Tulbul@Example.com", password: "password123" });
     expect(res.status).toBe(201);
-    expect(res.body.access_token).toBeTruthy();
-    expect(res.body.refresh_token).toBeTruthy();
-    expect(res.body.user).toMatchObject({ username: "Tulbul", email: "tulbul@example.com", rating: 1500, games_played: 0, rank: null });
-    expect(res.body.user.password_hash).toBeUndefined();
+    expect(res.body).toEqual({ verification_required: true, username: "Tulbul", email: "tulbul@example.com" });
+    expect(ctx.mailer.outbox.at(-1)!.subject).toMatch(/^Your Rann code: \d{6}$/);
+
+    const login = await call(ctx.app, "POST", "/auth/login", { login: "Tulbul", password: "password123" });
+    expect(login).toMatchObject({ status: 403, body: { error: "email_not_verified" } });
+
+    const verified = await call(ctx.app, "POST", "/auth/verify-email", { login: "tulbul@example.com", code: lastCode("tulbul@example.com") });
+    expect(verified.status).toBe(200);
+    expect(verified.body.access_token).toBeTruthy();
+    expect(verified.body.user).toMatchObject({ username: "Tulbul", email: "tulbul@example.com", email_verified: true, rating: 1500, rank: null });
+    expect(verified.body.user.password_hash).toBeUndefined();
+    expect((await call(ctx.app, "POST", "/auth/login", { login: "Tulbul", password: "password123" })).status).toBe(200);
   });
 
   it("rejects a taken username, ignoring case", async () => {
@@ -34,6 +42,61 @@ describe("signup", () => {
     expect(email.body).toMatchObject({ error: "invalid_input", field: "email" });
     const pass = await call(ctx.app, "POST", "/auth/signup", { username: "abc", email: "a@b.co", password: "short" });
     expect(pass.body).toMatchObject({ error: "invalid_input", field: "password" });
+  });
+});
+
+describe("email verification", () => {
+  const start = () => call(ctx.app, "POST", "/auth/signup", { username: "Bogembo", email: "boss@example.com", password: "password123" });
+
+  it("rejects a wrong code, and locks after 5 wrong tries", async () => {
+    await start();
+    const right = lastCode("boss@example.com");
+    const wrong = right === "000000" ? "111111" : "000000";
+    const first = await call(ctx.app, "POST", "/auth/verify-email", { login: "Bogembo", code: wrong });
+    expect(first.body).toMatchObject({ error: "invalid_code", field: "code" });
+    for (let i = 0; i < 4; i++) await call(ctx.app, "POST", "/auth/verify-email", { login: "Bogembo", code: wrong });
+    expect((await call(ctx.app, "POST", "/auth/verify-email", { login: "Bogembo", code: right })).body.error).toBe("invalid_code");
+  });
+
+  it("resend replaces the old code", async () => {
+    await start();
+    const old = lastCode("boss@example.com");
+    expect((await call(ctx.app, "POST", "/auth/resend-verification", { login: "Bogembo" })).status).toBe(200);
+    const fresh = lastCode("boss@example.com");
+    if (old !== fresh) {
+      expect((await call(ctx.app, "POST", "/auth/verify-email", { login: "Bogembo", code: old })).body.error).toBe("invalid_code");
+    }
+    expect((await call(ctx.app, "POST", "/auth/verify-email", { login: "Bogembo", code: fresh })).status).toBe(200);
+  });
+
+  it("an expired code doesn't work", async () => {
+    await start();
+    await ctx.db.query("UPDATE email_codes SET expires_at = now() - interval '1 minute'");
+    expect((await call(ctx.app, "POST", "/auth/verify-email", { login: "Bogembo", code: lastCode("boss@example.com") })).body.error).toBe("invalid_code");
+  });
+
+  it("resend answers the same for unknown or verified accounts and sends nothing", async () => {
+    await signup(ctx.app, "Kael");
+    const before = ctx.mailer.outbox.length;
+    expect((await call(ctx.app, "POST", "/auth/resend-verification", { login: "nobody" })).status).toBe(200);
+    expect((await call(ctx.app, "POST", "/auth/resend-verification", { login: "Kael" })).status).toBe(200);
+    expect(ctx.mailer.outbox).toHaveLength(before);
+  });
+
+  it("says so when the email can't be sent", async () => {
+    const send = ctx.mailer.send;
+    ctx.mailer.send = async () => { throw new Error("SMTP down"); };
+    const errors = console.error;
+    console.error = () => {};
+    try {
+      expect(await start()).toMatchObject({ status: 503, body: { error: "email_failed" } });
+    } finally {
+      ctx.mailer.send = send;
+      console.error = errors;
+    }
+    // The account exists, so "Resend code" works once email is back.
+    expect((await call(ctx.app, "POST", "/auth/resend-verification", { login: "Bogembo" })).status).toBe(200);
+    expect((await call(ctx.app, "POST", "/auth/verify-email", { login: "Bogembo", code: lastCode("boss@example.com") })).status).toBe(200);
   });
 });
 
@@ -110,6 +173,13 @@ describe("forgot password", () => {
     }
     const res = await call(ctx.app, "POST", "/auth/reset-password", { email: "kael@example.com", code: right, new_password: "newpassword1" });
     expect(res.body.error).toBe("invalid_code");
+  });
+
+  it("a reset also confirms an unverified email", async () => {
+    await call(ctx.app, "POST", "/auth/signup", { username: "Mira", email: "mira@example.com", password: "password123" });
+    await call(ctx.app, "POST", "/auth/forgot-password", { email: "mira@example.com" });
+    await call(ctx.app, "POST", "/auth/reset-password", { email: "mira@example.com", code: code(), new_password: "newpassword1" });
+    expect((await call(ctx.app, "POST", "/auth/login", { login: "Mira", password: "newpassword1" })).status).toBe(200);
   });
 
   it("logs out all sessions after a reset", async () => {

@@ -97,4 +97,5 @@ export const usernameSchema = z
   .trim()
   .regex(/^[A-Za-z0-9_]{3,20}$/, "Username must be 3–20 letters, numbers or underscores.");
 export const emailSchema = z.string().trim().pipe(z.email("Enter a valid email address.")).transform((e) => e.toLowerCase());
+export const codeSchema = z.string().trim().regex(/^\d{6}$/, "The code is 6 digits.");
 export const passwordSchema = z.string().min(8, "Password must be at least 8 characters.").max(200, "Password is too long.");

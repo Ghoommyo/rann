@@ -4,6 +4,12 @@ extends FormScreen
 
 var _username_button: Button
 var _email_button: Button
+var _email_now: Label
+var _email_sent: Label
+var _email_confirm_step: VBoxContainer
+var _email_confirm_button: Button
+var _password_code_button: Button
+var _password_step: VBoxContainer
 var _password_button: Button
 var _deactivate_button: Button
 
@@ -20,20 +26,31 @@ func _ready() -> void:
 	set_value("username", Account.username())
 	_username_button = add_submit("Change username", _change_username)
 
+	# Email, in two steps: a code goes to the new address, then it's entered here.
 	section()
 	add_heading("Email")
+	_email_now = add_text("", 18)
 	add_field("email", "New email", false, LineEdit.KEYBOARD_TYPE_EMAIL_ADDRESS)
-	set_value("email", str(Account.user.get("email", "")))
 	add_field("email_password", "Your password", true, LineEdit.KEYBOARD_TYPE_PASSWORD)
-	_email_button = add_submit("Change email", _change_email)
+	_email_button = add_submit("Send code to new email", _change_email)
+	_email_confirm_step = section(0)
+	_email_sent = add_text("", 18)
+	add_field("email_code", "Code from that email", false, LineEdit.KEYBOARD_TYPE_NUMBER, "123456")
+	_email_confirm_button = add_submit("Change email", _confirm_email)
+	_email_confirm_step.visible = false
+	_show_email()
 
+	# Password, in two steps: a code goes to the account's email first.
 	section()
 	add_heading("Password")
-	add_field("current_password", "Current password", true, LineEdit.KEYBOARD_TYPE_PASSWORD)
+	add_text("We'll email you a code to confirm it's you. Changing it logs you out on your other devices.", 18)
+	_password_code_button = add_submit("Send code to my email", _send_password_code)
+	_password_step = section(0)
+	add_field("password_code", "Code from the email", false, LineEdit.KEYBOARD_TYPE_NUMBER, "123456")
 	add_field("new_password", "New password", true, LineEdit.KEYBOARD_TYPE_PASSWORD, "At least 8 characters")
 	add_field("confirm_password", "Confirm new password", true, LineEdit.KEYBOARD_TYPE_PASSWORD)
 	_password_button = add_submit("Change password", _change_password)
-	add_text("Logs you out on your other devices.", 16, Color(MenuStyle.TEXT, 0.7))
+	_password_step.visible = false
 
 	section()
 	add_heading("Deactivate account")
@@ -76,13 +93,49 @@ func _change_email() -> void:
 	if value("email_password") == "":
 		field_error("email_password", "Enter your password.")
 		return
-	if await _run(_email_button, Account.change_email.bind(value("email"), value("email_password")),
-			"Email changed.", {"password": "email_password"}):
+	var result: Dictionary = await _call(_email_button, Account.change_email.bind(value("email"), value("email_password")),
+		{"password": "email_password"})
+	if result.ok:
 		set_value("email_password", "")
+		_email_sent.text = "We sent a code to %s. Your email changes once you enter it." % str(result.data.get("pending_email", value("email")))
+		_email_confirm_step.visible = true
+		MenuStyle.focus_later(field("email_code"))
+
+
+func _confirm_email() -> void:
+	clear_errors()
+	if not _is_code(value("email_code")):
+		field_error("email_code", "The code is 6 digits.")
+		return
+	if await _run(_email_confirm_button, Account.confirm_email_change.bind(value("email_code")),
+			"Email changed.", {"code": "email_code"}):
+		set_value("email_code", "")
+		_email_confirm_step.visible = false
+		_show_email()
+
+
+func _show_email() -> void:
+	var email := str(Account.user.get("email", ""))
+	_email_now.text = "Now: %s" % email
+	set_value("email", "")
+
+
+func _send_password_code() -> void:
+	clear_errors()
+	var result: Dictionary = await _call(_password_code_button, Account.request_password_code, {})
+	if result.ok:
+		show_status("We sent a code to %s." % str(result.data.get("email", "your email")), MenuStyle.SUCCESS, _password_code_button)
+		_password_code_button.set_meta("text", "Send a new code")
+		_password_code_button.text = "Send a new code"
+		_password_step.visible = true
+		MenuStyle.focus_later(field("password_code"))
 
 
 func _change_password() -> void:
 	clear_errors()
+	if not _is_code(value("password_code")):
+		field_error("password_code", "The code is 6 digits.")
+		return
 	var problem := password_problem(value("new_password"))
 	if problem != "":
 		field_error("new_password", problem)
@@ -90,10 +143,14 @@ func _change_password() -> void:
 	if value("confirm_password") != value("new_password"):
 		field_error("confirm_password", "The passwords don't match.")
 		return
-	if await _run(_password_button, Account.change_password.bind(value("current_password"), value("new_password")),
-			"Password changed."):
-		for f in ["current_password", "new_password", "confirm_password"]:
+	if await _run(_password_button, Account.change_password.bind(value("password_code"), value("new_password")),
+			"Password changed.", {"code": "password_code"}):
+		for f in ["password_code", "new_password", "confirm_password"]:
 			set_value(f, "")
+
+
+static func _is_code(text: String) -> bool:
+	return text.is_valid_int() and text.length() == 6
 
 
 func _deactivate() -> void:

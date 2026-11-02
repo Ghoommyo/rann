@@ -35,6 +35,10 @@ func _log_in(reactivate := false) -> void:
 	if result.ok:
 		Game.notice = "Welcome back, %s!" % Account.username() if not reactivate else "Your account is active again."
 		Game.go_to_main_menu()
+	elif result.error == "email_not_verified":
+		Account.pending_login = value("login")
+		Account.pending_send_code = true
+		Game.go_to(Game.VERIFY_EMAIL)
 	elif result.error == "account_deactivated":
 		show_status("This account is deactivated. Reactivate it to log in.")
 		_reactivate.visible = true

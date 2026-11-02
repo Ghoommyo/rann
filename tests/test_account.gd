@@ -69,8 +69,23 @@ func test_account_screens_open():
 	Account.load_session(PATH)
 	Account._logged_in({"access_token": "a", "refresh_token": "r", "user": {"username": "arjun", "rating": 1500, "rating_deviation": 350, "rank": null}})
 	Account._access_expires_ms = 0
-	for scene in [Game.LOGIN, Game.SIGNUP, Game.FORGOT_PASSWORD, Game.PROFILE, Game.ACCOUNT_SETTINGS, Game.MAIN_MENU]:
+	Account.pending_login = "arjun"
+	Account.pending_send_code = false  # don't call the server from a test
+	for scene in [Game.LOGIN, Game.SIGNUP, Game.FORGOT_PASSWORD, Game.VERIFY_EMAIL, Game.PROFILE,
+			Game.ACCOUNT_SETTINGS, Game.MAIN_MENU]:
 		var screen: Control = load(scene).instantiate()
 		add_child_autofree(screen)
 		assert_gt(screen.get_child_count(), 1, scene)
+	Account.pending_login = ""
+	Account._forget()
+
+
+func test_account_settings_hide_the_code_steps_until_a_code_is_sent():
+	Account.load_session(PATH)
+	Account._logged_in({"access_token": "a", "refresh_token": "r", "user": {"username": "arjun", "email": "a@b.co"}})
+	var screen: Control = load(Game.ACCOUNT_SETTINGS).instantiate()
+	add_child_autofree(screen)
+	assert_false(screen.field("password_code").is_visible_in_tree())
+	assert_false(screen.field("email_code").is_visible_in_tree())
+	assert_true(screen.field("email").is_visible_in_tree())
 	Account._forget()

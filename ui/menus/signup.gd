@@ -31,8 +31,14 @@ func _sign_up() -> void:
 		return
 	set_busy(false)
 	if result.ok:
-		Game.notice = "Welcome to Rann, %s!" % Account.username()
-		Game.go_to_main_menu()
+		Account.pending_send_code = false  # the server just sent one
+		Game.notice = "Account created! We sent a 6-digit code to %s." % value("email")
+		Game.go_to(Game.VERIFY_EMAIL)
+	elif result.error == "email_failed":
+		# The account exists, but the email didn't go out: "Resend code" there.
+		Account.pending_login = value("username")
+		Account.pending_send_code = false
+		Game.go_to(Game.VERIFY_EMAIL)
 	else:
 		show_error(result)
 

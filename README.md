@@ -48,6 +48,10 @@ title screen. Online matches between two logged-in players are **ranked** with
 Glicko-2 (like chess.com); the profile shows rating, rank and games played/won/lost.
 Guests can play everything, unranked.
 
+Emails are confirmed with a 6-digit code: after sign-up (the account works once it's
+entered), for a forgotten password, to change the password, and for a new email address.
+Real emails go out through Brevo's free plan; see [server/README.md → Email](server/README.md#email-brevo-free).
+
 This needs the server in [`server/`](server/README.md) running (Node + PostgreSQL).
 Set its address in **Settings → Server**.
 

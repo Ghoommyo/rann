@@ -15,6 +15,7 @@ export interface UserRow {
   wins: number;
   losses: number;
   draws: number;
+  email_verified_at: Date | null;
   created_at: Date;
 }
 
@@ -58,5 +59,5 @@ export async function publicProfile(db: Queryable, user: UserRow) {
 
 /** What the logged-in player sees about themselves. */
 export async function privateProfile(db: Queryable, user: UserRow) {
-  return { ...(await publicProfile(db, user)), email: user.email, is_active: user.is_active };
+  return { ...(await publicProfile(db, user)), email: user.email, email_verified: user.email_verified_at !== null, is_active: user.is_active };
 }

@@ -1,9 +1,10 @@
 // The logged-in player's profile and account settings.
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { emailSchema, parse, passwordSchema, requireUserId, usernameSchema, type Deps } from "../app.js";
+import { codeSchema, emailSchema, parse, passwordSchema, requireUserId, usernameSchema, type Deps } from "../app.js";
 import { badRequest, conflict, unauthorized } from "../errors.js";
 import { hashPassword, verifyPassword } from "../auth/passwords.js";
+import { sendCode, useCode } from "../emailCodes.js";
 import { issueTokens, revokeAllSessions } from "../sessions.js";
 import { findUserById, privateProfile, type UserRow } from "../users.js";
 import type { Db } from "../db.js";
@@ -30,7 +31,10 @@ async function updateUnique(db: Db, sql: string, params: unknown[], field: "user
   }
 }
 
-export function meRoutes({ db }: Deps) {
+export function meRoutes({ db, mailer, authRateLimit }: Deps) {
+  // Each of these sends an email, so they're limited like the login endpoints.
+  const limited = { config: { rateLimit: { max: authRateLimit, timeWindow: "1 minute" } } };
+
   return async (app: FastifyInstance) => {
     app.get("/", async (req) => privateProfile(db, await activeUser(db, await requireUserId(req))));
 
@@ -48,18 +52,38 @@ export function meRoutes({ db }: Deps) {
       return privateProfile(db, (await findUserById(db, user.id))!);
     });
 
-    app.patch("/email", async (req) => {
+    // Changing the email: the code goes to the NEW address, and nothing
+    // changes until it's entered (POST /email/confirm).
+    app.patch("/email", limited, async (req) => {
       const user = await activeUser(db, await requireUserId(req));
       const body = parse(z.object({ email: emailSchema, password: z.string() }), req.body);
       await checkPassword(user, body.password);
-      await updateUnique(db, "UPDATE users SET email = $2, updated_at = now() WHERE id = $1", [user.id, body.email], "email");
+      if (body.email === user.email.toLowerCase()) throw badRequest("same_email", "That's already your email.", "email");
+      const { rows } = await db.query("SELECT 1 FROM users WHERE email = $1", [body.email]);
+      if (rows.length > 0) throw conflict("email_taken", "An account with that email already exists.", "email");
+      await sendCode(db, mailer, user, "change_email", { to: body.email, newEmail: body.email });
+      return { ok: true, pending_email: body.email };
+    });
+
+    app.post("/email/confirm", limited, async (req) => {
+      const user = await activeUser(db, await requireUserId(req));
+      const body = parse(z.object({ code: codeSchema }), req.body);
+      const { new_email } = await useCode(db, user.id, "change_email", body.code);
+      await updateUnique(db, "UPDATE users SET email = $2, email_verified_at = now(), updated_at = now() WHERE id = $1", [user.id, new_email], "email");
       return privateProfile(db, (await findUserById(db, user.id))!);
     });
 
-    app.patch("/password", async (req) => {
+    // Changing the password: proven by a code sent to the account's email.
+    app.post("/password/code", limited, async (req) => {
       const user = await activeUser(db, await requireUserId(req));
-      const body = parse(z.object({ current_password: z.string(), new_password: passwordSchema }), req.body);
-      await checkPassword(user, body.current_password, "current_password");
+      await sendCode(db, mailer, user, "change_password");
+      return { ok: true, email: user.email };
+    });
+
+    app.patch("/password", limited, async (req) => {
+      const user = await activeUser(db, await requireUserId(req));
+      const body = parse(z.object({ code: codeSchema, new_password: passwordSchema }), req.body);
+      await useCode(db, user.id, "change_password", body.code);
       await db.query("UPDATE users SET password_hash = $2, updated_at = now() WHERE id = $1", [user.id, await hashPassword(body.new_password)]);
       // Log out every other device; this one gets a fresh session.
       await revokeAllSessions(db, user.id);

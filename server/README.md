@@ -36,8 +36,40 @@ In the game, **Settings → Server** sets the address (default `http://localhost
 To play from a phone on the same Wi-Fi, use your Mac's address instead, e.g.
 `http://192.168.1.14:8787` (the server prints it when it starts).
 
-**Forgot password** emails a 6-digit code. Without `SMTP_URL` in `.env`, the email
-is printed in the server's console instead, so you can copy the code from there.
+Without `SMTP_URL` in `.env`, emails (verification and password codes) are printed in
+the server's console instead of being sent, so you can copy the codes from there.
+
+## Email (Brevo, free)
+
+The server emails 6-digit codes:
+- to confirm a new account's email,
+- to reset a forgotten password,
+- to change the password,
+- and to confirm a new email address.
+
+Codes work for 15 minutes, 5 tries each.
+
+To send real emails, use [Brevo](https://www.brevo.com). Its free plan sends about 300 emails a day, and you don't need your own domain.
+
+1. Create a free Brevo account.
+2. **Senders, Domains & Dedicated IPs → Senders → Add a sender**: enter the address
+   the codes should come from (e.g. your Gmail), then click the link Brevo emails you.
+3. **SMTP & API → SMTP**:
+   - Note the **SMTP login**. It looks like `8a1b2c001@smtp-brevo.com`; it's not your email.
+   - Click **Generate a new SMTP key** and copy the key.
+4. In `server/.env`, write the login with its `@` as `%40`:
+   ```
+   SMTP_URL=smtp://8a1b2c001%40smtp-brevo.com:YOUR_SMTP_KEY@smtp-relay.brevo.com:587
+   MAIL_FROM=Rann <the-sender-you-confirmed@gmail.com>
+   ```
+5. Check it: `npm run test-email -- your-own@address.com`, then look in your inbox (and spam).
+6. Restart the server (`npm run dev`).
+
+`.env` is never committed, so the key stays on your computer. When the server is hosted,
+put the same two values in the host's environment variables.
+
+If sending fails, the player sees "Couldn't send the email. Try 'Resend code' in a minute."
+The server console shows why.
 
 ## Test
 ```bash
@@ -73,23 +105,27 @@ Endpoints marked 🔒 need `Authorization: Bearer <access_token>`.
 
 | | |
 |---|---|
-| `POST /auth/signup` | `{username, email, password}` → tokens + profile |
-| `POST /auth/login` | `{login, password, reactivate?}`; `login` is a username or email |
+| `POST /auth/signup` | `{username, email, password}` → `{verification_required, username, email}`; emails a code, no login yet |
+| `POST /auth/verify-email` | `{login, code}` → tokens + profile; `login` is a username or email |
+| `POST /auth/resend-verification` | `{login}`; always answers OK |
+| `POST /auth/login` | `{login, password, reactivate?}`; `email_not_verified` until the email is confirmed |
 | `POST /auth/refresh` | `{refresh_token}` → new tokens (the old refresh token stops working) |
 | `POST /auth/logout` | `{refresh_token}` |
 | `POST /auth/forgot-password` | `{email}`, always answers OK (doesn't reveal who has an account) |
-| `POST /auth/reset-password` | `{email, code, new_password}`, logs out all devices |
+| `POST /auth/reset-password` | `{email, code, new_password}`, logs out all devices (and confirms the email) |
 | 🔒 `GET /me`, `PATCH /me` | profile; `{bio}` (300 characters max) |
 | 🔒 `PATCH /me/username` | `{username}` |
-| 🔒 `PATCH /me/email` | `{email, password}` |
-| 🔒 `PATCH /me/password` | `{current_password, new_password}` → new tokens |
+| 🔒 `PATCH /me/email` | `{email, password}` → emails a code to the **new** address |
+| 🔒 `POST /me/email/confirm` | `{code}` → the email changes now |
+| 🔒 `POST /me/password/code` | emails a code to the account's address |
+| 🔒 `PATCH /me/password` | `{code, new_password}` → new tokens; logs out other devices |
 | 🔒 `POST /me/deactivate` | `{password}`; log in with `reactivate: true` to undo |
 | `GET /users/:username` | public profile |
 | `GET /leaderboard?limit=50` | top players |
 | 🔒 `POST /matches`, `POST /matches/:id/join`, `POST /matches/:id/result`, `GET /matches/:id` | ranked matches (see above) |
 
 Access tokens last 15 minutes; refresh tokens last 30 days. Passwords are hashed with
-argon2. Login, sign-up and password-reset requests are limited per IP.
+argon2. Login, sign-up, code and password requests are limited per IP.
 
 ## Putting it online
 
@@ -101,7 +137,7 @@ Node with a Postgres database works, e.g. Railway, Render or Fly.io:
    and the start command `npm start`.
 3. Set the environment variables from `.env.example`: `DATABASE_URL`, a new random
    `JWT_SECRET`, `CORS_ORIGINS` (the web address of the browser version),
-   `SMTP_URL` and `MAIL_FROM` from an email provider (e.g. Resend, Postmark, SendGrid).
+   `SMTP_URL` and `MAIL_FROM` (Brevo, see "Email" above).
 4. Change `Settings.DEFAULT_API_URL` in `game/settings.gd` to the server's
    `https://` address and rebuild the game.
 
