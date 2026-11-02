@@ -104,6 +104,9 @@ func _on_hello(msg: Array) -> void:
 	if CharacterRegistry.get_def(their_character) == null:
 		_fail("Opponent picked an unknown character '%s'." % their_character)
 		return
+	if not Roster.is_unlocked(their_character):
+		_fail("Your opponent picked a fighter that isn't open. Both players should reopen character select.")
+		return
 	if is_host:
 		p1_id = my_character
 		p2_id = their_character

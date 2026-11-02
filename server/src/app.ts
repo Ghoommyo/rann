@@ -3,6 +3,8 @@ import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
 import cors from "@fastify/cors";
 import fastifyJwt from "@fastify/jwt";
 import rateLimit from "@fastify/rate-limit";
+import fastifyStatic from "@fastify/static";
+import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import type { Db } from "./db.js";
 import type { Mailer } from "./mailer.js";
@@ -11,11 +13,14 @@ import { authRoutes } from "./routes/auth.js";
 import { meRoutes } from "./routes/me.js";
 import { userRoutes } from "./routes/users.js";
 import { matchRoutes } from "./routes/matches.js";
+import { adminRoutes } from "./routes/admin.js";
+import { rosterRoutes } from "./routes/roster.js";
 
 declare module "@fastify/jwt" {
   interface FastifyJWT {
-    payload: { sub: string };
-    user: { sub: string };
+    /** `role: "admin"` on admin portal tokens; absent on players' tokens. */
+    payload: { sub: string; role?: "admin" };
+    user: { sub: string; role?: "admin" };
   }
 }
 
@@ -67,6 +72,11 @@ export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
   await app.register(meRoutes(deps), { prefix: "/me" });
   await app.register(userRoutes(deps));
   await app.register(matchRoutes(deps), { prefix: "/matches" });
+  await app.register(rosterRoutes(deps));
+  await app.register(adminRoutes(deps), { prefix: "/admin/api" });
+  // The admin portal's web pages (server/admin/).
+  await app.register(fastifyStatic, { root: fileURLToPath(new URL("../admin/", import.meta.url)), prefix: "/admin/" });
+  app.get("/admin", (_req, reply) => reply.redirect("/admin/"));
   return app;
 }
 
@@ -88,6 +98,18 @@ export async function requireUserId(req: FastifyRequest): Promise<string> {
   } catch {
     throw unauthorized();
   }
+  if (req.user.role === "admin") throw unauthorized(); // admin tokens are only for /admin/api
+  return req.user.sub;
+}
+
+/** The admin's id, from an admin portal token. Players' tokens are refused. */
+export async function requireAdmin(req: FastifyRequest): Promise<string> {
+  try {
+    await req.jwtVerify();
+  } catch {
+    throw unauthorized();
+  }
+  if (req.user.role !== "admin") throw unauthorized();
   return req.user.sub;
 }
 

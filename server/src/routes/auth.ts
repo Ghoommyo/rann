@@ -76,6 +76,7 @@ export function authRoutes({ db, mailer, authRateLimit }: Deps) {
       const ok = await verifyPassword(user?.password_hash ?? (await dummyHash), body.password);
       if (!user || !ok) throw unauthorized("Wrong username/email or password.");
       if (!user.email_verified_at) throw forbidden("email_not_verified", "Confirm your email first: enter the code we emailed you.");
+      if (user.disabled_by_admin) throw forbidden("account_disabled", "This account has been switched off. Contact support.");
       if (!user.is_active) {
         if (!body.reactivate) throw forbidden("account_deactivated", "This account is deactivated. Log in again to reactivate it.");
         await db.query("UPDATE users SET is_active = true, updated_at = now() WHERE id = $1", [user.id]);

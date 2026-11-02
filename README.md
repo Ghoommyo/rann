@@ -58,6 +58,13 @@ Set its address in **Settings → Server**.
 Every fight starts with a 60-second loading screen with room for an ad
 (`Game.LOADING_SECONDS`, `Game.LOADING_SKIPPABLE` in `game/game.gd`).
 
+## Admin portal
+The server has a web admin portal at `http://<server>/admin` (any browser, including a phone).
+It shows analytics (users, matches, logins, fighter picks), lets the admin switch user accounts
+off and on, and choose which fighters players can pick. Character select shows 15 boxes per
+side, and fighters that aren't open show as "?". Admin logins are separate from game accounts.
+See [server/README.md → Admin portal](server/README.md#admin-portal).
+
 ## Online
 Main menu → **Online** → pick your fighter → **Host** or **Join** with the host's IP address (port 7777, UDP).
 Same Wi-Fi works right away. Over the internet, the host forwards UDP 7777 on their router.

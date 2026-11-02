@@ -12,6 +12,7 @@ func _ready() -> void:
 	title.grow_vertical = Control.GROW_DIRECTION_BOTH
 	add_child(title)
 
+	Roster.refresh()  # in the background; the last downloaded list works meanwhile
 	if Game.started_from_cli():
 		return  # Game is already heading to the online lobby
 	if Account.has_saved_session():

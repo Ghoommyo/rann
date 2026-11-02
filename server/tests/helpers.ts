@@ -27,7 +27,8 @@ export function useTestApp(options: { authRateLimit?: number } = {}): TestContex
     ctx.app = await buildApp({ db: ctx.db, mailer: ctx.mailer, jwtSecret: "test-secret", authRateLimit: options.authRateLimit ?? 1000 });
   });
   beforeEach(async () => {
-    await ctx.db.query("TRUNCATE users, refresh_tokens, email_codes, matches, match_reports CASCADE");
+    await ctx.db.query("TRUNCATE users, refresh_tokens, email_codes, matches, match_reports, admins CASCADE");
+    await ctx.db.query("UPDATE fighters SET unlocked = id IN ('kael', 'mira')");
     ctx.mailer.outbox.length = 0;
   });
   afterAll(async () => {

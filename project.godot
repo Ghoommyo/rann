@@ -20,6 +20,8 @@ Settings="*res://game/settings.gd"
 ; Accounts: talking to the Rann server, and the logged-in player.
 Api="*res://net/api_client.gd"
 Account="*res://game/account.gd"
+; Which fighters players can pick (set in the admin portal).
+Roster="*res://game/roster.gd"
 Game="*res://game/game.gd"
 
 [display]

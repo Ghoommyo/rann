@@ -8,6 +8,7 @@ export interface UserRow {
   password_hash: string;
   bio: string;
   is_active: boolean;
+  disabled_by_admin: boolean;
   rating: number;
   rating_deviation: number;
   volatility: number;

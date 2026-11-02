@@ -71,6 +71,44 @@ put the same two values in the host's environment variables.
 If sending fails, the player sees "Couldn't send the email. Try 'Resend code' in a minute."
 The server console shows why.
 
+## Admin portal
+
+A website for managing the game, at **http://localhost:8787/admin** (or `/admin` on the
+hosted server). Admin logins are separate from game accounts: an admin can't play, and a
+player can't open the portal.
+
+Make your admin login (or change its password) once:
+```bash
+npm run create-admin -- you@example.com
+```
+It asks for the password twice. What you type isn't shown, and only a hash is stored.
+
+The top-right menu (☰) has **Dashboard**, **Users**, **Players** and **Log out**:
+- **Dashboard**:
+  - totals for users and ranked matches
+  - charts of sign-ups, matches and players online per day (last 30 days)
+  - which fighters are picked most, and the top 10 players
+- **Users**:
+  - Active and Inactive tabs, and search by username or email
+  - **Switch off** logs the player out on every device and stops them logging in
+    ("This account has been switched off. Contact support."). **Switch on** undoes it.
+  - Inactive users include players who deactivated their own account; they can come back
+    by logging in.
+- **Players**:
+  - Active and Inactive tabs of fighters, each with an on/off switch
+  - Only active fighters can be picked; the others show as "?" in character select.
+  - The game downloads the list at start-up and whenever character select opens. Offline,
+    it uses the last list it got (Kael and Mira on a first launch with no connection).
+
+Closing the browser tab logs you out; a login also expires after 8 hours.
+
+**Adding a new fighter to the Players list:** add a migration, e.g. `migrations/005_new_fighter.sql`:
+```sql
+INSERT INTO fighters (id, name) VALUES ('new_fighter_id', 'Display Name');
+```
+The id is the fighter's folder name in `data/characters/`. A new fighter starts inactive
+until you switch it on.
+
 ## Test
 ```bash
 npm test                        # wipes and uses the rann_test database
@@ -123,6 +161,18 @@ Endpoints marked 🔒 need `Authorization: Bearer <access_token>`.
 | `GET /users/:username` | public profile |
 | `GET /leaderboard?limit=50` | top players |
 | 🔒 `POST /matches`, `POST /matches/:id/join`, `POST /matches/:id/result`, `GET /matches/:id` | ranked matches (see above) |
+| `GET /roster` | `{unlocked: [fighter ids]}`: the fighters players can pick |
+
+Admin portal API (`/admin/api`). Everything but `/login` needs an **admin** token; players' tokens are refused there,
+and admin tokens are refused everywhere else:
+
+| | |
+|---|---|
+| `POST /admin/api/login` | `{email, password}` → `{token, email}` (8 hours) |
+| `GET /admin/api/stats` | dashboard numbers and 30-day series |
+| `GET /admin/api/users?status=active\|inactive&q=&page=` | 50 per page |
+| `POST /admin/api/users/:id/disable`, `/enable` | switch an account off / on |
+| `GET /admin/api/fighters`, `PATCH /admin/api/fighters/:id` | `{unlocked}` |
 
 Access tokens last 15 minutes; refresh tokens last 30 days. Passwords are hashed with
 argon2. Login, sign-up, code and password requests are limited per IP.
