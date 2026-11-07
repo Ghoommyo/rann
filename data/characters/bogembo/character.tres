@@ -7,15 +7,16 @@
 [ext_resource type="Resource" path="res://data/characters/bogembo/style.tres" id="3_style"]
 [ext_resource type="Resource" path="res://data/characters/bogembo/moves/backhand.tres" id="4_backhand"]
 [ext_resource type="Resource" path="res://data/characters/bogembo/moves/tyrant_fist.tres" id="5_tyrant_fist"]
-[ext_resource type="Resource" path="res://data/characters/bogembo/moves/throne_kick.tres" id="6_throne_kick"]
-[ext_resource type="Resource" path="res://data/characters/bogembo/moves/shin_stomp.tres" id="7_shin_stomp"]
-[ext_resource type="Resource" path="res://data/characters/bogembo/moves/robe_sweep.tres" id="8_robe_sweep"]
-[ext_resource type="Resource" path="res://data/characters/bogembo/moves/overlord_uppercut.tres" id="9_overlord_uppercut"]
-[ext_resource type="Resource" path="res://data/characters/bogembo/moves/henchman_charge.tres" id="10_henchman_charge"]
-[ext_resource type="Resource" path="res://data/characters/bogembo/moves/tezaab_drop.tres" id="11_tezaab_drop"]
-[ext_resource type="Resource" path="res://data/characters/bogembo/moves/laser_sweep.tres" id="12_laser_sweep"]
-[ext_resource type="Resource" path="res://data/characters/bogembo/moves/khush_hua.tres" id="13_khush_hua"]
-[ext_resource type="Resource" path="res://data/characters/bogembo/moves/throw.tres" id="14_throw"]
+[ext_resource type="Resource" path="res://data/characters/bogembo/moves/royal_shove.tres" id="6_royal_shove"]
+[ext_resource type="Resource" path="res://data/characters/bogembo/moves/throne_kick.tres" id="7_throne_kick"]
+[ext_resource type="Resource" path="res://data/characters/bogembo/moves/shin_stomp.tres" id="8_shin_stomp"]
+[ext_resource type="Resource" path="res://data/characters/bogembo/moves/robe_sweep.tres" id="9_robe_sweep"]
+[ext_resource type="Resource" path="res://data/characters/bogembo/moves/overlord_uppercut.tres" id="10_overlord_uppercut"]
+[ext_resource type="Resource" path="res://data/characters/bogembo/moves/henchman_charge.tres" id="11_henchman_charge"]
+[ext_resource type="Resource" path="res://data/characters/bogembo/moves/tezaab_drop.tres" id="12_tezaab_drop"]
+[ext_resource type="Resource" path="res://data/characters/bogembo/moves/laser_sweep.tres" id="13_laser_sweep"]
+[ext_resource type="Resource" path="res://data/characters/bogembo/moves/khush_hua.tres" id="14_khush_hua"]
+[ext_resource type="Resource" path="res://data/characters/bogembo/moves/throw.tres" id="15_throw"]
 
 [resource]
 script = ExtResource("1_def")
@@ -32,4 +33,4 @@ intro_line = "Bogembo khush hua!"
 color = Color(0.75, 0.6, 0.15, 1)
 model_scene = ExtResource("2_kw85w")
 animation_library = ExtResource("1_ytmsw")
-moves = Array[ExtResource("2_move")]([ExtResource("4_backhand"), ExtResource("5_tyrant_fist"), ExtResource("6_throne_kick"), ExtResource("7_shin_stomp"), ExtResource("8_robe_sweep"), ExtResource("9_overlord_uppercut"), ExtResource("10_henchman_charge"), ExtResource("11_tezaab_drop"), ExtResource("12_laser_sweep"), ExtResource("13_khush_hua"), ExtResource("14_throw")])
+moves = Array[ExtResource("2_move")]([ExtResource("4_backhand"), ExtResource("5_tyrant_fist"), ExtResource("6_royal_shove"), ExtResource("7_throne_kick"), ExtResource("8_shin_stomp"), ExtResource("9_robe_sweep"), ExtResource("10_overlord_uppercut"), ExtResource("11_henchman_charge"), ExtResource("12_tezaab_drop"), ExtResource("13_laser_sweep"), ExtResource("14_khush_hua"), ExtResource("15_throw")])

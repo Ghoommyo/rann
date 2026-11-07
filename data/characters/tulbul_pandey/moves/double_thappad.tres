@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="MoveDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+id = "double_thappad"
+display_name = "Double Thappad"
+animation_name = "double_thappad"
+command = "RP"
+startup = 13
+active = 5
+recovery = 24
+hitbox_offset_x = 250
+hitbox_offset_y = 1250
+hitbox_width = 700
+hitbox_height = 300
+hit_level = 0
+damage = 110
+hitstun = 30
+blockstun = 18
+pushback = 40
+hitstop = 10
+on_hit = 2
+required_stance = "swag"
+enters_stance = "normal"
+placeholder_animation = "thappad"

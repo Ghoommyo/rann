@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="MoveDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+id = "chair_kick"
+display_name = "Kursi Kick"
+animation_name = "chair_kick"
+command = "RK"
+startup = 19
+active = 4
+recovery = 28
+hitbox_offset_x = 250
+hitbox_offset_y = 700
+hitbox_width = 800
+hitbox_height = 450
+hit_level = 1
+damage = 120
+hitstun = 30
+blockstun = 18
+pushback = 30
+hitstop = 12
+on_hit = 1
+required_stance = "swag"
+enters_stance = "normal"
+placeholder_animation = "police_boot"

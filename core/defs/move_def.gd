@@ -33,8 +33,11 @@ enum OnHit { NONE, LAUNCH, KNOCKDOWN }
 
 @export var id := ""
 @export var display_name := ""
-## Animation to play in Phase 3. Must exist in the character's AnimationLibrary.
+## Animation to play. Named after the clip file (e.g. "thappad" → recorded/thappad.fbx).
 @export var animation_name := ""
+## Played instead while the character has no `animation_name` clip yet (e.g.
+## a similar borrowed move), so a new move doesn't freeze in the idle pose.
+@export var placeholder_animation := ""
 ## Input that performs the move, in numpad notation (see plans/02-phase-combat-system.md).
 ## Examples: "LP", "2+LK", "3+RP", "236+RP", "LP+LK".
 @export var command := "LP"

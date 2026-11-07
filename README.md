@@ -26,8 +26,8 @@ Training: `F6` change dummy behaviour · `F7` record / stop (then the dummy play
 |---|---|---|
 | **Kael** | Striker, Rage meter | Rage Burst `236+LP+RP` (full meter) |
 | **Mira** | Tiger ↔ Crane stances (`LK+RK`), parry (tap forward just before a high/mid hits) | Rising Crane launcher (Crane `RK`) |
-| **Tulbul Pandey** | Zoner/counter: long pokes, parry, SWAG meter | Belt Whip `236+RP`, Dabangg Slow-Mo `236+LP+RP` (full meter) |
-| **Bogembo** | Boss grappler: charge moves (hold back), KHUSH meter | Unbreakable Tezaab Drop `4+LP+RP`, Henchman Charge `[4]6+RP` |
+| **Tulbul Pandey** | Zoner/counter: long pokes, parry, SWAG meter; Chashma Flip `214+LP` enters SWAG stance (Double Thappad `RP`, Kursi Kick `RK`, Back on Duty `LK+RK`) | Belt Whip `236+RP`, Dabangg Slow-Mo `236+LP+RP` (full meter) |
+| **Bogembo** | Boss grappler: charge moves (hold back), Royal Shove `LK` pushes far, KHUSH meter | Unbreakable Tezaab Drop `4+LP+RP`, Henchman Charge `[4]6+RP` |
 | **Ravan** | Heavy demon king, long reach, DASHANAN meter | Maya Wave `236+RK`, Dashanan Rage `236+LP+RP` (full meter) |
 | **Aswashthama** | Fast rushdown with parry, MANI meter | Astra Rush `236+RP`, Narayanastra `236+LP+RP` (full meter) |
 

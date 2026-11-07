@@ -2,16 +2,21 @@
 
 [ext_resource type="Script" path="res://core/defs/fight_style.gd" id="1_style"]
 [ext_resource type="Script" path="res://core/style/style_component.gd" id="2_base"]
-[ext_resource type="Script" path="res://core/style/parry_component.gd" id="3_parry"]
-[ext_resource type="Script" path="res://core/style/meter_component.gd" id="4_meter"]
+[ext_resource type="Script" path="res://core/style/stance_component.gd" id="3_stance"]
+[ext_resource type="Script" path="res://core/style/parry_component.gd" id="4_parry"]
+[ext_resource type="Script" path="res://core/style/meter_component.gd" id="5_meter"]
+
+[sub_resource type="Resource" id="stance"]
+script = ExtResource("3_stance")
+stances = Array[String](["normal", "swag"])
 
 [sub_resource type="Resource" id="parry"]
-script = ExtResource("3_parry")
+script = ExtResource("4_parry")
 window_frames = 6
 cooldown_frames = 40
 
 [sub_resource type="Resource" id="meter"]
-script = ExtResource("4_meter")
+script = ExtResource("5_meter")
 display_name = "SWAG"
 max_value = 1000
 gain_on_hit = 60
@@ -20,4 +25,4 @@ gain_on_damage_taken = 40
 
 [resource]
 script = ExtResource("1_style")
-components = Array[ExtResource("2_base")]([SubResource("parry"), SubResource("meter")])
+components = Array[ExtResource("2_base")]([SubResource("stance"), SubResource("parry"), SubResource("meter")])

@@ -27,7 +27,7 @@
 extends SceneTree
 
 const ASSETS := "res://assets/characters"
-const LOOPING := ["idle", "walk_forward", "walk_back", "crouch"]  # and any "<stance>_idle"
+const LOOPING := ["idle", "walk_forward", "walk_back", "crouch", "intro_walk"]  # and any "<stance>_idle"
 const MODEL_NAMES := ["model.fbx", "model.glb", "model.gltf"]
 const HIPS := "mixamorig_Hips"
 const ClipCleanup := preload("res://tools/clip_cleanup.gd")
@@ -195,11 +195,25 @@ func _report(id: String, def: CharacterDef, library: AnimationLibrary, recorded:
 		needed[entry[0]] = true
 	for move in def.moves:
 		needed[move.animation_name] = true
+	for anim_name in FighterView.CELEBRATION_ANIMS:
+		needed[anim_name] = true
+	for component in def.get_style().components:
+		if component is StanceComponent:
+			for stance in (component as StanceComponent).stances.slice(1):
+				needed["%s_idle" % stance] = true
 	var own: Array = needed.keys().filter(func(n): return recorded.has(n))
 	var borrowed: Array = needed.keys().filter(func(n): return not recorded.has(n) and library.has_animation(n))
 	var missing: Array = needed.keys().filter(func(n): return not library.has_animation(n))
+	# Moves without their own clip yet play a similar one (MoveDef.placeholder_animation).
+	var stand_ins: Array = []
+	for move in def.moves:
+		if move.animation_name in missing and library.has_animation(move.placeholder_animation):
+			stand_ins.append("%s (as %s)" % [move.animation_name, move.placeholder_animation])
+			missing.erase(move.animation_name)
 	print("%s: recorded %d/%d%s" % [id, own.size(), needed.size(), (": " + ", ".join(own)) if not own.is_empty() else ""])
 	if not borrowed.is_empty():
 		print("%s: borrowed (anims/): %s" % [id, ", ".join(borrowed)])
+	if not stand_ins.is_empty():
+		print("%s: using a stand-in: %s" % [id, ", ".join(stand_ins)])
 	if not missing.is_empty():
 		print("%s: missing (will fall back to idle): %s" % [id, ", ".join(missing)])

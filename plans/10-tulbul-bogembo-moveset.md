@@ -2,6 +2,8 @@
 
 This is the design for both fighters' own styles. **Edit anything**: names, buttons, what a move does, how it should look. Then tell Claude, and the game data gets updated from this page.
 
+**Status:** every move on these cards is in the game (data in `data/characters/<id>/`). Until you record a move, it plays a stand-in: an old copy of Kael's animation, or for the new moves a similar one (e.g. Double Thappad plays the Thappad clip). Celebrations without a clip just show the normal pose. The checklist at the end lists every clip to record.
+
 Each card has a **"Act it out"** line. That's what you perform on camera for the move (see [11-guide-recording-moves.md](11-guide-recording-moves.md)). The clip file gets the name in the `File` column.
 
 Words used below:
@@ -81,6 +83,19 @@ His taunt, the **Chashma Flip**, puts him into **SWAG stance** for stronger fini
 
 ---
 
+## Intro and celebrations
+These play around the fight, not during it. Record them like the moves (same folder, same file names), but **face the camera** for `intro_walk` and `intro`: in the intro, the fighter walks straight towards the camera.
+
+| File | When it plays | Tulbul: act it out | Bogembo: act it out |
+|---|---|---|---|
+| `intro_walk.fbx` | Walking up to the camera before the fight (loops) | Slow swagger towards the camera, thumbs in belt, chest out, 3–4 steps | Heavy, slow, regal march towards the camera, arms wide, 3–4 steps |
+| `intro.fbx` | While saying his line (≈1.3 s) | Lower the sunglasses with one finger, smirk, push them back up | Spread arms wide, throw head back laughing ("khush hua!") |
+| `round_win.fbx` | After winning a round (≈1.5 s) | Dust off the shoulder, twirl the moustache | Slow clap, then point down at the opponent |
+| `victory.fbx` | After winning the match (holds the last pose) | Sunglasses on, salute, then a hip-shake dance step ending in a pose | Sit back on an imaginary throne, one leg crossed, chin up |
+| `defeat.fbx` | After losing on time (holds the last pose) | Hand on head, kick the ground in frustration | Turn away with a dismissive wave |
+
+`swag_idle.fbx` (Tulbul's SWAG stance standing pose) is in his SWAG table above.
+
 ## Shared movements (both fighters)
 | File | What it is | Record yourself? |
 |---|---|---|
@@ -90,3 +105,26 @@ His taunt, the **Chashma Flip**, puts him into **SWAG stance** for stronger fini
 | `block.fbx` | Guarding a hit | ✅ yes: arms up, flinch slightly backwards |
 | `jump.fbx`, `land.fbx` | Jump and landing | ✅ yes, if you have room (or keep the current ones) |
 | `hit.fbx`, `juggle.fbx`, `knockdown.fbx`, `wakeup.fbx`, `thrown.fbx` | Getting hit, falling, getting up | ❌ no: falling on the floor is unsafe to act out. Keep Mixamo clips ("Hit Reaction", "Falling Back Death", "Getting Up", "Flying Back Death") |
+
+---
+
+## Recording checklist
+Put each clip in `assets/characters/<id>/recorded/` with exactly this file name. The build tool's report (guide 11, step 3) shows which ones are done.
+
+**Tulbul Pandey** (`assets/characters/tulbul_pandey/recorded/`), 32 clips:
+- **Personality first:** `idle`, `walk_forward`, `walk_back`, `swag_idle`, `intro_walk`, `intro`
+- **Moves:** `jab`, `thappad`, `shin_kick`, `police_boot`, `lathi_poke`, `sweep`, `buckle_uppercut`, `belt_whip`, `cop_arrest`
+- **SWAG:** `chashma_flip`, `double_thappad`, `chair_kick`, `duty_reset`
+- **Super:** `dabangg_slowmo`
+- **Celebrations:** `round_win`, `victory`, `defeat`
+- **Other:** `crouch`, `block`, `jump`, `land` (optional), and keep the Mixamo hit/fall clips: `hit`, `juggle`, `knockdown`, `wakeup`, `thrown`
+
+**Bogembo** (`assets/characters/bogembo/recorded/`), 29 clips:
+- **Personality first:** `idle`, `walk_forward`, `walk_back`, `intro_walk`, `intro`
+- **Moves:** `backhand`, `tyrant_fist`, `royal_shove`, `throne_kick`, `shin_stomp`, `robe_sweep`, `overlord_uppercut`, `henchman_charge`, `laser_sweep`, `throw` (Boss Toss)
+- **Grabs and super:** `tezaab_drop`, `khush_hua`
+- **Celebrations:** `round_win`, `victory`, `defeat`
+- **Other:** `crouch`, `block`, `jump`, `land` (optional), and keep the Mixamo hit/fall clips: `hit`, `juggle`, `knockdown`, `wakeup`, `thrown`
+
+You don't have to do them all at once: each clip shows up in the game as soon as it's built in.
+

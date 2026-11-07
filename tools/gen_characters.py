@@ -64,26 +64,42 @@ MIRA = dict(
     ],
 )
 
-# Parody of Chulbul Pandey (Dabangg). Zoner/counter: long pokes, a belt whip, parries.
+# Parody of Chulbul Pandey (Dabangg). Zoner/counter: long pokes, a belt whip, parries,
+# and SWAG stance (entered with the Chashma Flip) for stronger finishers.
+# Moves follow plans/10-tulbul-bogembo-moveset.md. SWAG moves come first: on
+# the same button, the earlier move in the list wins.
 TULBUL = dict(
     id="tulbul_pandey", display_name="Tulbul Pandey", color=(0.76, 0.65, 0.42),
     description="Swaggering cop. Long pokes and a belt whip keep you out; tap forward to parry. Darr nahi lagta… swag lagta hai.",
     intro_line="Darr nahi lagta… swag lagta hai!",
     stats=dict(max_health=1000, walk_forward_speed=36, walk_back_speed=30),
-    style=[("parry", dict(window_frames=6, cooldown_frames=40)),
+    style=[("stance", dict(stances=["normal", "swag"])),
+           ("parry", dict(window_frames=6, cooldown_frames=40)),
            ("meter", dict(display_name="SWAG", max_value=1000, gain_on_hit=60, gain_on_block=30, gain_on_damage_taken=40))],
     moves=[
+        # SWAG stance: stronger finishers, each ends the stance
+        ("double_thappad", "Double Thappad", "RP", 13, 5, 24, (250, 1250, 700, 300), 0, 110, 30, 18, 40, 10,
+         dict(stance="swag", enters="normal", on_hit=2, placeholder="thappad")),                                  # knocks down
+        ("chair_kick", "Kursi Kick", "RK", 19, 4, 28, (250, 700, 800, 450), 1, 120, 30, 18, 30, 12,
+         dict(stance="swag", enters="normal", on_hit=1, placeholder="police_boot")),                              # launcher
+        ("duty_reset", "Back on Duty", "LK+RK", 1, 0, 11, (0, 0, 0, 0), 1, 0, 0, 0, 0, 0,
+         dict(stance="swag", enters="normal")),
+        # Any stance
         ("jab", "Quick Jab", "LP", 10, 2, 14, (250, 1300, 550, 250), 0, 48, 23, 16, 24, 6, dict(cancels=["thappad"])),       # +8 / +1
         ("thappad", "Thappad", "RP", 13, 2, 18, (250, 1300, 700, 250), 0, 65, 26, 17, 36, 8, dict(cancels=["belt_whip"])),  # +7 / -2
+        ("shin_kick", "Shin Kick", "LK", 11, 2, 15, (250, 500, 600, 300), 1, 50, 23, 16, 26, 7,
+         dict(placeholder="police_boot")),                                                                         # +7 / 0
         ("police_boot", "Police Boot", "RK", 15, 3, 20, (250, 700, 800, 400), 1, 85, 26, 18, 45, 10, {}),                  # +4 / -4
         ("lathi_poke", "Lathi Poke", "2+LK", 13, 3, 20, (250, 0, 750, 350), 2, 40, 24, 10, 20, 6, dict(low_profile=True)), # +2 / -12
         ("sweep", "Sweep", "2+RK", 19, 4, 30, (250, 0, 800, 300), 2, 75, 30, 10, 30, 10, dict(low_profile=True, on_hit=2)),
         ("buckle_uppercut", "Belt-Buckle Uppercut", "3+RP", 16, 3, 27, (200, 900, 500, 800), 1, 60, 30, 15, 20, 10, dict(on_hit=1)),  # launcher, -14
         ("belt_whip", "Belt Whip", "236+RP", 20, 4, 22, (300, 1000, 1000, 300), 1, 90, 30, 22, 40, 10, {}),               # zoning tool, -3
-        ("chashma_flip", "Chashma Flip", "214+LP", 1, 0, 20, (0, 0, 0, 0), 1, 0, 0, 0, 0, 0, dict(cancels=["belt_whip"])), # taunt
+        ("chashma_flip", "Chashma Flip", "214+LP", 1, 0, 20, (0, 0, 0, 0), 1, 0, 0, 0, 0, 0,
+         dict(stance="normal", enters="swag", cancels=["belt_whip"])),                                             # taunt → SWAG
         ("dabangg_slowmo", "Dabangg Slow-Mo", "236+LP+RP", 10, 4, 34, (250, 900, 800, 700), 1, 230, 40, 20, 60, 30,
          dict(forward_speed=40, on_hit=2, meter_cost=1000)),                                                               # super
-        ("throw", "Cop Arrest", "LP+LK", 12, 2, 28, (200, 800, 450, 700), 3, 120, 0, 0, 40, 8, dict(throw_break=1)),
+        ("cop_arrest", "Cop Arrest", "LP+LK", 12, 2, 28, (200, 800, 450, 700), 3, 120, 0, 0, 40, 8,
+         dict(throw_break=1, placeholder="throw")),
     ],
 )
 
@@ -98,6 +114,8 @@ BOGEMBO = dict(
     moves=[
         ("backhand", "Backhand", "LP", 11, 2, 15, (250, 1300, 500, 250), 0, 55, 23, 16, 24, 6, dict(cancels=["tyrant_fist"])),  # +7 / 0
         ("tyrant_fist", "Tyrant Fist", "RP", 16, 3, 22, (250, 1250, 650, 300), 0, 95, 27, 17, 45, 10, {}),                    # +3 / -7
+        ("royal_shove", "Royal Shove", "LK", 14, 3, 20, (250, 900, 600, 400), 1, 40, 22, 16, 110, 8,
+         dict(placeholder="tyrant_fist")),                                                                         # pushes far, 0 / -6
         ("throne_kick", "Throne Kick", "RK", 16, 3, 22, (250, 700, 700, 400), 1, 95, 26, 16, 55, 10, {}),                     # +2 / -8
         ("shin_stomp", "Shin Stomp", "2+LK", 14, 3, 20, (250, 0, 550, 350), 2, 50, 24, 10, 20, 6, {}),                        # +2 / -12
         ("robe_sweep", "Robe Sweep", "2+RK", 20, 4, 30, (250, 0, 750, 300), 2, 90, 30, 10, 30, 10, dict(on_hit=2)),
@@ -109,7 +127,7 @@ BOGEMBO = dict(
         ("laser_sweep", "Laser Sweep", "236+RK", 26, 6, 26, (300, 0, 1200, 250), 2, 70, 28, 12, 30, 10, dict(on_hit=2)),   # -19
         ("khush_hua", "Khush Hua!", "236+LP+RP", 8, 2, 40, (200, 800, 500, 700), 3, 300, 0, 0, 40, 20,
          dict(throw_break=0, throw_duration=80, meter_cost=1000)),                                                          # grab super
-        ("throw", "Throw", "LP+LK", 12, 2, 28, (200, 800, 450, 700), 3, 110, 0, 0, 40, 8, dict(throw_break=1)),
+        ("throw", "Boss Toss", "LP+LK", 12, 2, 28, (200, 800, 450, 700), 3, 110, 0, 0, 40, 8, dict(throw_break=1)),
     ],
 )
 
@@ -206,17 +224,14 @@ def write_move(folder, m):
         lines.append(f'throw_break_buttons = {extra["throw_break"]}')  # 0 = unbreakable
     if "throw_duration" in extra:
         lines.append(f'throw_duration = {extra["throw_duration"]}')
+    if "placeholder" in extra:
+        lines.append(f'placeholder_animation = "{extra["placeholder"]}"')
     with open(os.path.join(folder, "moves", f"{mid}.tres"), "w") as f:
         f.write("\n".join(lines) + "\n")
 
 
-def write_character(c):
-    folder = os.path.join(ROOT, c["id"])
-    os.makedirs(os.path.join(folder, "moves"), exist_ok=True)
-    for m in c["moves"]:
-        write_move(folder, m)
-
-    # style.tres: a FightStyle with its components as sub-resources
+def write_style(c, folder):
+    """style.tres: a FightStyle with its components as sub-resources."""
     ext = ['[ext_resource type="Script" path="res://core/defs/fight_style.gd" id="1_style"]',
            '[ext_resource type="Script" path="res://core/style/style_component.gd" id="2_base"]']
     subs, refs = [], []
@@ -232,6 +247,15 @@ def write_character(c):
               'components = Array[ExtResource("2_base")]([' + ", ".join(refs) + "])"]
     with open(os.path.join(folder, "style.tres"), "w") as f:
         f.write("\n".join(style) + "\n")
+
+
+def write_character(c):
+    folder = os.path.join(ROOT, c["id"])
+    os.makedirs(os.path.join(folder, "moves"), exist_ok=True)
+    for m in c["moves"]:
+        write_move(folder, m)
+
+    write_style(c, folder)
 
     # character.tres
     ext = ['[ext_resource type="Script" path="res://core/defs/character_def.gd" id="1_def"]',

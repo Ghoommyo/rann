@@ -4,9 +4,9 @@
 
 [resource]
 script = ExtResource("1_move")
-id = "throw"
+id = "cop_arrest"
 display_name = "Cop Arrest"
-animation_name = "throw"
+animation_name = "cop_arrest"
 command = "LP+LK"
 startup = 12
 active = 2
@@ -22,3 +22,4 @@ blockstun = 0
 pushback = 40
 hitstop = 8
 throw_break_buttons = 1
+placeholder_animation = "throw"

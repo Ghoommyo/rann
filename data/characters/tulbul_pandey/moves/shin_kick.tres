@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="MoveDef" format=3]
+
+[ext_resource type="Script" path="res://core/defs/move_def.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+id = "shin_kick"
+display_name = "Shin Kick"
+animation_name = "shin_kick"
+command = "LK"
+startup = 11
+active = 2
+recovery = 15
+hitbox_offset_x = 250
+hitbox_offset_y = 500
+hitbox_width = 600
+hitbox_height = 300
+hit_level = 1
+damage = 50
+hitstun = 23
+blockstun = 16
+pushback = 26
+hitstop = 7
+placeholder_animation = "police_boot"

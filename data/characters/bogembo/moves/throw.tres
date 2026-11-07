@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_move")
 id = "throw"
-display_name = "Throw"
+display_name = "Boss Toss"
 animation_name = "throw"
 command = "LP+LK"
 startup = 12

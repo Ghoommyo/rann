@@ -87,7 +87,11 @@ The build tool:
 - cuts the still lead-in and tail,
 - locks the fighter in place, so it doesn't slide away.
 
-It then prints a report of every move: **recorded**, **still Kael's** (an old copy that hasn't been replaced yet) or **missing**.
+It then prints a report of every clip the fighter uses:
+- **recorded:** your own
+- **borrowed:** an old copy (Kael's) that hasn't been replaced yet
+- **using a stand-in:** a new move playing a similar clip until you record it
+- **missing:** nothing to play yet (it falls back to the standing pose)
 
 Check the move in **Training** mode:
 - Press **F1** to show hitboxes. The strike in the animation should line up with when the red box appears.

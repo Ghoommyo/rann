@@ -210,6 +210,7 @@ func _process(delta: float) -> void:
 		return
 	var alpha := Engine.get_physics_interpolation_fraction()
 	for i in 2:
+		_views[i].pose = _celebration(i)
 		_views[i].show_state(_prev_state.fighters[i], _state.fighters[i], alpha, _state.frame)
 	_camera.follow(_state, delta)
 	_overlay.draw_state(_state, _defs)
@@ -229,6 +230,26 @@ func _process(delta: float) -> void:
 	_pending_events.clear()
 
 
+## The celebration fighter `i` plays now ("" = none): a pose after winning a
+## round once the "K.O." banner has shown, and victory or defeat at the end.
+func _celebration(i: int) -> String:
+	var f := _state.fighters[i]
+	var standing := f.state == FighterState.State.IDLE or f.state == FighterState.State.WALK_FORWARD \
+		or f.state == FighterState.State.WALK_BACK or f.state == FighterState.State.CROUCH
+	if not standing:
+		return ""
+	match _state.phase:
+		FightState.Phase.ROUND_OVER:
+			if _state.round_winner == i and _state.phase_frame >= 60:
+				return "round_win"
+		FightState.Phase.MATCH_OVER:
+			if _state.match_winner == i:
+				return "victory"
+			if _state.match_winner == 1 - i:
+				return "defeat"
+	return ""
+
+
 ## Draws the intro: the fighters walking in, and what they say.
 func _show_intro(delta: float) -> void:
 	var alpha := Engine.get_physics_interpolation_fraction()
@@ -236,6 +257,7 @@ func _show_intro(delta: float) -> void:
 		var view := _views[i]
 		view.visible = _intro.on_stage(i)
 		view.face_camera = true
+		view.pose = "intro" if _intro.speaker() == i else "intro_walk"
 		view.depth = lerpf(_intro.depth(i, _intro.frame - 1), _intro.depth(i), alpha)
 		view.show_state(_intro.fighter(i, _intro.frame - 1), _intro.fighter(i), alpha, _intro.frame)
 	_camera.place(FightIntro.CAMERA_POSITION, FightIntro.CAMERA_LOOK_AT)
@@ -251,6 +273,7 @@ func _end_intro() -> void:
 		view.visible = true
 		view.face_camera = false
 		view.depth = 0.0
+		view.pose = ""
 	_camera.snap(_state)  # cut to the fight
 	_hud.intro = false
 	_hud.intro_caption = ""

@@ -22,3 +22,5 @@ blockstun = 0
 pushback = 0
 hitstop = 0
 cancels_into = Array[String](["belt_whip"])
+required_stance = "normal"
+enters_stance = "swag"

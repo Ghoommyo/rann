@@ -8,8 +8,11 @@
 ## The animation doesn't decide anything: it is posed to match the sim each
 ## frame ("frame 7 of the uppercut"). After a rollback (Phase 4) it just
 ## jumps to the right pose.
-##  - Attacks play MoveDef.animation_name, stretched over the move's total frames.
-##  - Other states play the standard names in STATE_ANIMS.
+##  - Attacks play MoveDef.animation_name, stretched over the move's total frames
+##    (or MoveDef.placeholder_animation until the move has its own clip).
+##  - Other states play the standard names in STATE_ANIMS; standing in a stance
+##    other than the first plays "<stance>_idle" (e.g. Tulbul's "swag_idle").
+##  - `pose` (set by the fight scene) plays a celebration from CELEBRATION_ANIMS.
 ## Missing animations fall back to "idle", so a half-finished character still works.
 class_name FighterView
 extends Node3D
@@ -34,6 +37,17 @@ const STATE_ANIMS := {
 	State.THROWN: ["thrown", false],
 }
 
+## Clips for the intro and celebrations, used as `pose` by the fight scene.
+## Optional: without the clip, the fighter just shows their normal animation.
+## [name, loops]
+const CELEBRATION_ANIMS := {
+	"intro_walk": true,   # walking up to the camera before the fight
+	"intro": false,       # while saying their intro line
+	"round_win": false,   # after winning a round
+	"victory": false,     # after winning the match (holds the last pose)
+	"defeat": false,      # after losing the match (only when standing)
+}
+
 const HIPS_BONE := "mixamorig_Hips"
 
 const HIT_TINT := Color(1, 1, 1)
@@ -45,6 +59,13 @@ const LIMB_ACTIVE_COLOR := Color(1.0, 0.85, 0.2)
 ## and turning to face the camera instead of the opponent.
 var depth := 0.0
 var face_camera := false
+## A clip from CELEBRATION_ANIMS to play instead of the normal one ("" = none).
+var pose := "":
+	set(value):
+		if value != pose:
+			pose = value
+			_pose_start = -1
+var _pose_start := -1  # global frame the pose started on
 
 var _def: CharacterDef
 var _base_color: Color
@@ -213,6 +234,8 @@ func _show_model(cur: FighterState, global_frame: int) -> void:
 	if cur.state == State.ATTACK or cur.state == State.THROWING:
 		var move := _def.moves[cur.move_index]
 		anim_name = move.animation_name
+		if _resolve(anim_name) == "":
+			anim_name = move.placeholder_animation
 		var length := move.throw_duration if cur.state == State.THROWING else move.total_frames()
 		progress = float(cur.state_frame) / maxi(1, length)
 	else:
@@ -220,8 +243,20 @@ func _show_model(cur: FighterState, global_frame: int) -> void:
 		anim_name = entry[0]
 		if not entry[1]:
 			progress = _state_progress(cur)
+		if cur.state == State.IDLE:
+			var stance_idle := "%s_idle" % _stance(cur)
+			if _stance(cur) != "" and _resolve(stance_idle) != "":
+				anim_name = stance_idle
 
 	var full_name := _resolve(anim_name)
+	var pose_name := _resolve(pose) if pose != "" else ""
+	if pose_name != "":
+		full_name = pose_name
+		if _pose_start < 0:
+			_pose_start = global_frame
+		# One-shot celebrations play once and hold their last pose.
+		progress = -1.0 if CELEBRATION_ANIMS.get(pose, false) else \
+			(global_frame - _pose_start) / 60.0 / maxf(0.01, _anim.get_animation(pose_name).length)
 	if full_name == "":
 		full_name = _resolve("idle")
 		progress = -1.0
@@ -253,6 +288,16 @@ func _state_progress(cur: FighterState) -> float:
 
 
 ## Finds an animation by name in any of the player's libraries ("jab" or "moves/jab").
+## The fighter's stance when it isn't their first one (e.g. "swag"), else "".
+func _stance(cur: FighterState) -> String:
+	for component in _def.get_style().components:
+		if component is StanceComponent:
+			var stance: StanceComponent = component
+			var name_now := stance.current(cur)
+			return name_now if name_now != stance.stances[0] else ""
+	return ""
+
+
 func _resolve(anim_name: String) -> String:
 	if anim_name == "":
 		return ""
