@@ -80,8 +80,22 @@ func _stat(caption: String, number: String) -> PanelContainer:
 	var inner := VBoxContainer.new()
 	inner.alignment = BoxContainer.ALIGNMENT_CENTER
 	panel.add_child(inner)
-	for part in [MenuStyle.label(number, 32), MenuStyle.label(caption, 15, MenuStyle.ACCENT)]:
-		part.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var value: Control = MenuStyle.label(number, 32)
+	if caption == "RANK":
+		# The trophy before the rank number.
+		var row := HBoxContainer.new()
+		row.alignment = BoxContainer.ALIGNMENT_CENTER
+		var trophy := TextureRect.new()
+		trophy.texture = MenuStyle.icon("leaderboard")
+		trophy.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		trophy.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		trophy.custom_minimum_size = Vector2(30, 30)
+		row.add_child(trophy)
+		row.add_child(value)
+		value = row
+	for part: Control in [value, MenuStyle.label(caption, 15, MenuStyle.ACCENT)]:
+		if part is Label:
+			(part as Label).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		inner.add_child(part)
 	return panel
 

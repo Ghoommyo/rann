@@ -53,7 +53,7 @@ func _slot_of(screen: Control, side: int, id: String) -> Button:
 	return null
 
 
-func test_both_sides_have_15_boxes_and_locked_ones_show_a_question_mark():
+func test_both_sides_have_15_boxes_and_locked_ones_show_a_padlock():
 	Roster.set_unlocked(["kael", "tulbul_pandey"] as Array[String])
 	var screen := _open_select(Game.Mode.LOCAL_VERSUS)
 	for side in [0, 1]:
@@ -61,7 +61,8 @@ func test_both_sides_have_15_boxes_and_locked_ones_show_a_question_mark():
 		var open := 0
 		for slot: Button in screen._slots[side]:
 			if slot.disabled:
-				assert_eq(slot.text, "?")
+				assert_eq(slot.icon, MenuStyle.icon("locked"), "a padlock with a ?")
+				assert_eq(slot.text, "")
 			else:
 				open += 1
 		assert_eq(open, 2, "only the open fighters can be picked")

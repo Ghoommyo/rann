@@ -33,6 +33,12 @@ Training: `F6` change dummy behaviour · `F7` record / stop (then the dummy play
 
 3D models: see [plans/07-guide-mixamo-import.md](plans/07-guide-mixamo-import.md) (Mixamo stock models) and [plans/09-guide-custom-characters.md](plans/09-guide-custom-characters.md) (your own characters from pictures). Until you add them, fighters are capsules.
 
+## Icons
+The app icon, the emblem and the menu icons all come from the two pictures in
+`assets/icons/source/` (`rann.png` and the `other_icons.png` sheet). After replacing either one, run
+`python3 tools/make_icons.py` (needs `pip install pillow numpy scipy`): it cuts out the backgrounds and
+writes every size the game, the Android/iOS/web builds and the admin portal use.
+
 ## Mobile and web builds
 `tools/build_mobile.sh android-debug | android-release | ios | web`. See [plans/05-phase-mobile-release.md](plans/05-phase-mobile-release.md) for signing and store steps.
 

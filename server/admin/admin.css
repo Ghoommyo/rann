@@ -70,7 +70,9 @@ input:focus, button:focus-visible, a:focus-visible { outline: 2px solid var(--se
 /* Top bar and menu */
 .topbar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between;
   padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--border); }
-.brand { font-weight: 800; letter-spacing: 0.08em; color: var(--accent); text-decoration: none; }
+.brand img { border-radius: 6px; }
+.login-card .logo { border-radius: 14px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: 0.08em; color: var(--accent); text-decoration: none; }
 .menu { position: relative; }
 .menu-button { display: flex; gap: 10px; align-items: center; font-size: 18px; }
 .menu-button .muted { font-size: 14px; }

@@ -4,7 +4,7 @@
 ##
 ## Each side has SLOTS boxes. Fighters come from CharacterRegistry, but only
 ## the ones the admin opened (Roster) can be picked, and they come first;
-## locked fighters and empty slots show "?". In Versus CPU, a difficulty row (0–10) is shown.
+## locked fighters and empty slots show a padlock with a "?". In Versus CPU, a difficulty row (0–10) is shown.
 extends Control
 
 const SLOTS := 15
@@ -22,6 +22,7 @@ var _slots: Array[Array] = [[], []]            # the SLOTS buttons of each side
 var _picked_labels: Array[Label] = []
 var _info_labels: Array[Label] = []
 var _fight: Button
+var _locked_icon := MenuStyle.icon("locked")
 var _level_label: Label
 var _level_down: Button
 var _level_up: Button
@@ -179,9 +180,19 @@ func _refresh_slots() -> void:
 			var open := _can_pick(side, i)
 			slot.disabled = not open
 			slot.focus_mode = Control.FOCUS_ALL if open else Control.FOCUS_NONE
-			slot.icon = def.portrait if open and def.portrait else null
+			var hidden_pick: bool = side == RIGHT and _online()  # not locked: just not known here
+			slot.icon = null
+			slot.text = ""
 			slot.expand_icon = true
-			slot.text = def.display_name.to_upper().replace(" ", "\n") if open else "?"
+			slot.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			if open:
+				slot.icon = def.portrait
+				slot.text = def.display_name.to_upper().replace(" ", "\n")
+			elif hidden_pick:
+				slot.text = "?"
+			else:
+				slot.icon = _locked_icon  # a padlock with a "?" on it
+			slot.add_theme_color_override("icon_disabled_color", Color(1, 1, 1, 0.45))
 			if open:
 				for state in ["font_color", "font_focus_color", "font_hover_color", "font_pressed_color"]:
 					slot.add_theme_color_override(state, def.color.lightened(0.35))

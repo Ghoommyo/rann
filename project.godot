@@ -10,8 +10,11 @@ config/description="2.5D fighting game"
 run/main_scene="res://ui/menus/boot.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 config/version="0.6.0"
-config/icon="res://icon.svg"
+config/icon="res://assets/icons/app/icon.png"
 boot_splash/bg_color=Color(0.08, 0.06, 0.14, 1)
+boot_splash/image="res://assets/icons/app/emblem.png"
+boot_splash/fullsize=false
+boot_splash/show_image=true
 
 [autoload]
 

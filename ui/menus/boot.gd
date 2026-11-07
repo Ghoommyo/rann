@@ -6,11 +6,15 @@ extends Control
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(MenuStyle.background())
-	var title := MenuStyle.label("RANN", 110, MenuStyle.ACCENT)
-	title.set_anchors_preset(Control.PRESET_CENTER)
-	title.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	title.grow_vertical = Control.GROW_DIRECTION_BOTH
-	add_child(title)
+	var column := VBoxContainer.new()
+	column.set_anchors_preset(Control.PRESET_CENTER)
+	column.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	column.grow_vertical = Control.GROW_DIRECTION_BOTH
+	column.add_child(MenuStyle.emblem(320))
+	var title := MenuStyle.label("RANN", 90, MenuStyle.ACCENT)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	column.add_child(title)
+	add_child(column)
 
 	Roster.refresh()  # in the background; the last downloaded list works meanwhile
 	if Game.started_from_cli():

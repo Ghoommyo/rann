@@ -121,14 +121,29 @@ static func _style_text_box(c: Control) -> void:
 	c.add_theme_stylebox_override("read_only", normal)
 
 
-## Three bars: the "menu" icon (drawn here, so it doesn't depend on a font
-## having the ☰ character).
-static func menu_icon(size := 28) -> ImageTexture:
-	var img := Image.create_empty(size, size, false, Image.FORMAT_RGBA8)
-	var bar := maxi(3, size / 8)
-	for i in 3:
-		img.fill_rect(Rect2i(2, int(size * (0.18 + 0.32 * i)), size - 4, bar), TEXT)
-	return ImageTexture.create_from_image(img)
+## A UI icon from assets/icons/ui/ (made by tools/make_icons.py), e.g. "settings".
+static func icon(icon_name: String) -> Texture2D:
+	return load("res://assets/icons/ui/%s.png" % icon_name)
+
+
+## Puts a UI icon on the left of a button, `size` pixels wide.
+static func with_icon(b: Button, icon_name: String, size := 34) -> Button:
+	b.icon = icon(icon_name)
+	b.add_theme_constant_override("icon_max_width", size)
+	b.add_theme_constant_override("h_separation", 12)
+	b.add_theme_color_override("icon_disabled_color", Color(1, 1, 1, 0.35))
+	return b
+
+
+## The game's emblem (the fighter in the ring of fire), `size` pixels square.
+static func emblem(size: float) -> TextureRect:
+	var rect := TextureRect.new()
+	rect.texture = load("res://assets/icons/app/emblem.png")
+	rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	rect.custom_minimum_size = Vector2(size, size)
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return rect
 
 
 static func _box(fill: Color, border: Color) -> StyleBoxFlat:
