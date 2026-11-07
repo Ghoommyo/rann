@@ -11,24 +11,29 @@ func before_each():
 	defs = [CharacterRegistry.get_def("tulbul_pandey"), CharacterRegistry.get_def("bogembo")]
 
 
-func test_player_1_walks_in_and_talks_then_player_2():
+func test_each_fighter_walks_up_to_the_camera_and_talks():
 	var start := FightState.create(defs, true)
 	var intro := FightIntro.new(start, defs)
 	assert_true(intro.on_stage(0))
-	assert_false(intro.on_stage(1), "P2 waits off stage at first")
+	assert_false(intro.on_stage(1), "P2 waits off screen at first")
 	assert_eq(intro.fighter(0).state, FighterState.State.WALK_FORWARD)
-	assert_lt(intro.fighter(0).pos_x, start.fighters[0].pos_x, "P1 comes in from the left")
+	assert_eq(intro.fighter(0).pos_x, 0, "in the middle of the stage")
+	assert_almost_eq(intro.depth(0), FightIntro.FAR_DEPTH, 0.01, "starts at the back")
+	intro.frame = FightIntro.WALK_FRAMES / 2
+	assert_between(intro.depth(0), FightIntro.FAR_DEPTH, FightIntro.NEAR_DEPTH, "coming towards the camera")
 
 	intro.frame = FightIntro.WALK_FRAMES
-	assert_eq(intro.fighter(0).pos_x, start.fighters[0].pos_x, "P1 reached the start mark")
+	assert_almost_eq(intro.depth(0), FightIntro.NEAR_DEPTH, 0.01, "stopped close to the camera")
+	assert_eq(intro.fighter(0).state, FighterState.State.IDLE)
 	assert_eq(intro.speaker(), 0)
 	assert_string_contains(intro.caption(), "TULBUL PANDEY")
 	assert_string_contains(intro.caption(), defs[0].intro_line)
 
 	intro.frame = FightIntro.PART_FRAMES + 1
+	assert_false(intro.on_stage(0), "P1 has left the shot")
 	assert_true(intro.on_stage(1))
-	assert_eq(intro.speaker(), -1, "nobody talks while P2 walks in")
-	assert_gt(intro.fighter(1).pos_x, start.fighters[1].pos_x, "P2 comes in from the right")
+	assert_eq(intro.speaker(), -1, "nobody talks while P2 walks up")
+	assert_lt(intro.depth(1), FightIntro.NEAR_DEPTH)
 
 	intro.frame = FightIntro.PART_FRAMES + FightIntro.WALK_FRAMES
 	assert_eq(intro.speaker(), 1)

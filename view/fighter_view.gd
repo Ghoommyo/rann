@@ -41,6 +41,11 @@ const BLOCK_TINT := Color(0.4, 0.9, 1.0)
 const THROWN_TINT := Color(0.8, 0.4, 1.0)
 const LIMB_ACTIVE_COLOR := Color(1.0, 0.85, 0.2)
 
+## For the intro only: meters off the fight line (+ = towards the camera),
+## and turning to face the camera instead of the opponent.
+var depth := 0.0
+var face_camera := false
+
 var _def: CharacterDef
 var _base_color: Color
 
@@ -76,7 +81,7 @@ func setup(def: CharacterDef, color: Color) -> void:
 func show_state(prev: FighterState, cur: FighterState, alpha: float, global_frame: int) -> void:
 	var x := lerpf(prev.pos_x, cur.pos_x, alpha)
 	var y := lerpf(prev.pos_y, cur.pos_y, alpha)
-	position = Vector3(FixedMath.to_meters(int(x)), FixedMath.to_meters(int(y)), 0.0)
+	position = Vector3(FixedMath.to_meters(int(x)), FixedMath.to_meters(int(y)), depth)
 	if _model:
 		_show_model(cur, global_frame)
 	else:
@@ -201,7 +206,7 @@ func _skeleton_height() -> float:
 
 func _show_model(cur: FighterState, global_frame: int) -> void:
 	# Mixamo models face +Z; turn them to face along the fight line.
-	_model.rotation.y = deg_to_rad(90.0 * cur.facing)
+	_model.rotation.y = 0.0 if face_camera else deg_to_rad(90.0 * cur.facing)
 
 	var anim_name := ""
 	var progress := -1.0  # 0..1 through a one-shot animation; -1 = looping

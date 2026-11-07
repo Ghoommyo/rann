@@ -53,6 +53,14 @@ func shake(strength: float) -> void:
 	_shake = maxf(_shake, strength)
 
 
+## Puts the camera at a fixed spot looking at `target` (the intro's shot).
+func place(at: Vector3, target: Vector3) -> void:
+	_base = at
+	_look = target
+	position = at
+	look_at(target)
+
+
 ## Jumps straight to the right spot (e.g. when a match starts).
 func snap(state: FightState) -> void:
 	follow(state, 100.0)

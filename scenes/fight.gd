@@ -233,9 +233,12 @@ func _process(delta: float) -> void:
 func _show_intro(delta: float) -> void:
 	var alpha := Engine.get_physics_interpolation_fraction()
 	for i in 2:
-		_views[i].visible = _intro.on_stage(i)
-		_views[i].show_state(_intro.fighter(i, _intro.frame - 1), _intro.fighter(i), alpha, _intro.frame)
-	_camera.follow(_state, delta)  # framed on the start marks: they walk into the shot
+		var view := _views[i]
+		view.visible = _intro.on_stage(i)
+		view.face_camera = true
+		view.depth = lerpf(_intro.depth(i, _intro.frame - 1), _intro.depth(i), alpha)
+		view.show_state(_intro.fighter(i, _intro.frame - 1), _intro.fighter(i), alpha, _intro.frame)
+	_camera.place(FightIntro.CAMERA_POSITION, FightIntro.CAMERA_LOOK_AT)
 	_hud.intro = true
 	_hud.intro_caption = _intro.caption()
 	_hud.intro_speaker = _intro.speaker()
@@ -246,6 +249,9 @@ func _end_intro() -> void:
 	_intro = null
 	for view in _views:
 		view.visible = true
+		view.face_camera = false
+		view.depth = 0.0
+	_camera.snap(_state)  # cut to the fight
 	_hud.intro = false
 	_hud.intro_caption = ""
 
