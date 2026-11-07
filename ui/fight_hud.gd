@@ -26,6 +26,12 @@ var debug_visible := false
 var match_info := ""
 ## A line of text under the timer (online status, disconnects, …).
 var notice := ""
+## During the intro before a fight: hides the round messages, and shows what
+## the fighter `intro_speaker` (0 or 1, -1 = nobody) says.
+var intro := false
+var intro_caption := ""
+var intro_speaker := -1
+var _caption: Label
 
 
 func _ready() -> void:
@@ -59,6 +65,9 @@ func _ready() -> void:
 	_notice.add_theme_color_override("font_color", Color(1.0, 0.85, 0.4))
 	_match_info = _label(16)
 	_match_info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_caption = _label(32)
+	_caption.add_theme_color_override("font_color", Color(1.0, 0.92, 0.75))
+	_caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
 
 func show_state(state: FightState, defs: Array[CharacterDef], delta: float, debug_lines: PackedStringArray) -> void:
@@ -72,7 +81,14 @@ func show_state(state: FightState, defs: Array[CharacterDef], delta: float, debu
 
 	_message.position = Vector2(0, size.y * 0.28)
 	_message.size = Vector2(w, 180)
-	_message.text = _message_text(state, defs)
+	_message.text = "" if intro else _message_text(state, defs)
+	# The 3-2-1 countdown numbers are extra big.
+	_message.add_theme_font_size_override("font_size", 130 if _message.text.is_valid_int() else 64)
+	_caption.visible = intro and intro_caption != ""
+	_caption.text = intro_caption
+	_caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if intro_speaker == 0 else HORIZONTAL_ALIGNMENT_RIGHT
+	_caption.position = Vector2(MARGIN * 2, size.y * 0.66)
+	_caption.size = Vector2(w - MARGIN * 4, 120)
 
 	_notice.text = notice
 	_match_info.text = match_info
@@ -175,8 +191,8 @@ func _show_combo(s: Dictionary, hits: int, x: float, left: bool, delta: float) -
 func _message_text(state: FightState, defs: Array[CharacterDef]) -> String:
 	match state.phase:
 		Phase.READY:
-			if state.phase_frame >= 55:
-				return "FIGHT!"
+			if state.round_number == 1:
+				return str(3 - floori(state.phase_frame / float(Rules.COUNTDOWN_STEP_FRAMES)))  # 3, 2, 1
 			var last := Rules.WINS_TO_WIN_MATCH - 1
 			if state.wins[0] == last and state.wins[1] == last:
 				return "FINAL ROUND"
@@ -186,6 +202,9 @@ func _message_text(state: FightState, defs: Array[CharacterDef]) -> String:
 			if state.phase_frame < 60:
 				return "K.O." if ko else "TIME"
 			return "DRAW" if state.round_winner < 0 else "%s WINS" % defs[state.round_winner].display_name.to_upper()
+		Phase.FIGHTING:
+			if not state.training and state.phase_frame < Rules.FIGHT_BANNER_FRAMES:
+				return "FIGHT!"
 		Phase.MATCH_OVER:
 			if state.match_winner < 0:
 				return "DRAW GAME"

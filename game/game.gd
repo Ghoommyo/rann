@@ -10,12 +10,12 @@ extends Node
 enum Mode { VERSUS_CPU, LOCAL_VERSUS, TRAINING, ONLINE }
 
 ## Bump when gameplay changes. Online players must have the same version.
-const GAME_VERSION := "0.6.0"
+const GAME_VERSION := "0.7.0"
 
 ## The loading screen before every fight. It's also where an ad will go,
-## so it stays up for LOADING_SECONDS even when loading is faster.
+## so it stays up for LOADING_SECONDS (the ad's length) even when loading is faster.
 ## LOADING_SKIPPABLE shows a "Skip" button once the fight has loaded.
-const LOADING_SECONDS := 60.0
+const LOADING_SECONDS := 5.0
 const LOADING_SKIPPABLE := false
 
 const MAIN_MENU := "res://ui/menus/main_menu.tscn"
@@ -47,8 +47,9 @@ var online: OnlineConnection
 ##   godot --path . -- --net-host --net-bot --net-frames=1800
 ##   godot --path . -- --net-join=127.0.0.1 --net-lag=120 --net-bot --net-frames=1800
 ## --loading=SECONDS changes how long the loading screen stays (e.g. 0).
+## --no-intro skips the fighters walking in before the fight.
 var cli := {"host": false, "join": "", "lag": 0, "bot": false, "frames": 0, "character": "", "delay": 2,
-	"loading": -1.0}
+	"loading": -1.0, "no_intro": false}
 
 var _data_hash := ""
 
@@ -142,3 +143,4 @@ func _parse_command_line() -> void:
 			"net-char": cli.character = value
 			"net-delay": cli.delay = int(value)
 			"loading": cli.loading = maxf(float(value), 0.0)
+			"no-intro": cli.no_intro = true

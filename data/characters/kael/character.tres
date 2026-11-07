@@ -24,6 +24,7 @@ walk_forward_speed = 38
 walk_back_speed = 28
 style = ExtResource("3_style")
 description = "Striker. Straightforward pressure; fills his Rage meter to unleash Rage Burst."
+intro_line = "Let's see what you've got."
 color = Color(0.95, 0.55, 0.15, 1)
 model_scene = ExtResource("2_ps8t0")
 animation_library = ExtResource("1_1dg0d")

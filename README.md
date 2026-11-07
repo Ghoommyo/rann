@@ -61,8 +61,11 @@ Real emails go out through Brevo's free plan; see [server/README.md → Email](s
 This needs the server in [`server/`](server/README.md) running (Node + PostgreSQL).
 Set its address in **Settings → Server**.
 
-Every fight starts with a 60-second loading screen with room for an ad
-(`Game.LOADING_SECONDS`, `Game.LOADING_SKIPPABLE` in `game/game.gd`).
+Every fight starts with a 5-second loading screen with room for an ad
+(`Game.LOADING_SECONDS`, `Game.LOADING_SKIPPABLE` in `game/game.gd`). Then comes a short intro:
+Player 1's fighter walks in and says their line (`intro_line` in the character's `character.tres`),
+then Player 2's, and a 3-2-1 countdown starts the fight. Any button skips the intro (not online).
+Training skips both.
 
 ## Admin portal
 The server has a web admin portal at `http://<server>/admin` (any browser, including a phone).
@@ -78,7 +81,7 @@ Uses rollback netcode; see [plans/04-phase-online-multiplayer.md](plans/04-phase
 
 Testing two accounts on one computer: give each window its own login with `--session`, e.g.
 `godot --path . -- --net-host --session=a` and `godot --path . -- --net-join=127.0.0.1 --session=b`
-(add `--loading=0` to skip the 60-second loading screen).
+(add `--loading=0` to skip the 5-second loading screen, and `--no-intro` to skip the walk-in intro).
 
 ## Test
 ```bash

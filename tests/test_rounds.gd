@@ -62,7 +62,7 @@ func test_two_wins_ends_the_match():
 
 func test_ready_phase_ignores_input():
 	state = FightState.create(defs, true)
-	H.run(state, defs, Rules.READY_FRAMES - 1, InputFrame.RIGHT)
+	H.run(state, defs, Rules.ready_frames(1) - 1, InputFrame.RIGHT)
 	assert_eq(state.phase, Phase.READY)
 	assert_eq(state.fighters[0].pos_x, -FightState.START_DISTANCE / 2)
 	H.run(state, defs, 1)

@@ -49,6 +49,8 @@ extends Resource
 @export var style: FightStyle
 ## One line shown on character select.
 @export_multiline var description := ""
+## What the fighter says when walking in before the fight (the intro).
+@export var intro_line := ""
 
 @export_group("Look")
 ## Placeholder capsule color, also used for HUD accents.

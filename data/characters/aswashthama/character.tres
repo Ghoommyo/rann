@@ -25,6 +25,7 @@ walk_forward_speed = 46
 walk_back_speed = 34
 style = ExtResource("3_style")
 description = "Immortal warrior. Fast strings and dashing attacks; tap forward to parry. Fill MANI for Narayanastra."
+intro_line = "I have watched ages fall. You are nothing."
 color = Color(0.3, 0.55, 0.9, 1)
 model_scene = ExtResource("2_ai3x6")
 animation_library = ExtResource("1_23nf2")

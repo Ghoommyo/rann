@@ -16,6 +16,8 @@ var _views: Array[FighterView] = []
 var _cpu: CpuOpponent
 var _dummy: TrainingDummy
 var _pending_events: Array[Dictionary] = []  # sim events not yet shown/heard
+## The fighters walking in before the first fight; null once it's over.
+var _intro: FightIntro
 
 # Online
 var _session: RollbackSession
@@ -69,6 +71,9 @@ func _ready() -> void:
 	_pause.restart_requested.connect(_new_match)
 	_pause.dummy_mode_requested.connect(_cycle_dummy)
 	_new_match()
+	# Rematches and restarts go straight to the countdown; training has no intro.
+	if Game.mode != Game.Mode.TRAINING and not Game.cli.no_intro:
+		_intro = FightIntro.new(_state, _defs)
 
 
 func _character(id: String) -> CharacterDef:
@@ -97,6 +102,12 @@ func _new_match() -> void:
 
 func _physics_process(_delta: float) -> void:
 	if _pause.is_paused():
+		return
+	if _intro:
+		# The fight waits; online, both players play the same-length intro.
+		_intro.tick()
+		if _intro.done():
+			_end_intro()
 		return
 	if Game.mode == Game.Mode.ONLINE:
 		_online_tick()
@@ -194,6 +205,9 @@ func _report_cli_result() -> void:
 
 
 func _process(delta: float) -> void:
+	if _intro:
+		_show_intro(delta)
+		return
 	var alpha := Engine.get_physics_interpolation_fraction()
 	for i in 2:
 		_views[i].show_state(_prev_state.fighters[i], _state.fighters[i], alpha, _state.frame)
@@ -215,7 +229,40 @@ func _process(delta: float) -> void:
 	_pending_events.clear()
 
 
+## Draws the intro: the fighters walking in, and what they say.
+func _show_intro(delta: float) -> void:
+	var alpha := Engine.get_physics_interpolation_fraction()
+	for i in 2:
+		_views[i].visible = _intro.on_stage(i)
+		_views[i].show_state(_intro.fighter(i, _intro.frame - 1), _intro.fighter(i), alpha, _intro.frame)
+	_camera.follow(_state, delta)  # framed on the start marks: they walk into the shot
+	_hud.intro = true
+	_hud.intro_caption = _intro.caption()
+	_hud.intro_speaker = _intro.speaker()
+	_hud.show_state(_state, _defs, delta, _debug_lines())
+
+
+func _end_intro() -> void:
+	_intro = null
+	for view in _views:
+		view.visible = true
+	_hud.intro = false
+	_hud.intro_caption = ""
+
+
+## Any button or tap skips the intro (not online: both players must start together).
+func _is_skip_press(event: InputEvent) -> bool:
+	if Game.mode == Game.Mode.ONLINE or not event.is_pressed() or event.is_echo():
+		return false
+	return event is InputEventKey or event is InputEventJoypadButton \
+		or event is InputEventScreenTouch or event is InputEventMouseButton
+
+
 func _unhandled_input(event: InputEvent) -> void:
+	if _intro and not event.is_action_pressed("ui_cancel") and _is_skip_press(event):
+		_intro.skip()
+		get_viewport().set_input_as_handled()
+		return
 	if event.is_action_pressed("ui_cancel") or (event is InputEventJoypadButton and event.pressed \
 			and event.button_index == JOY_BUTTON_START):
 		if _pause.is_open():

@@ -26,6 +26,7 @@ walk_forward_speed = 45
 walk_back_speed = 34
 style = ExtResource("3_style")
 description = "Stance dancer. Flows between Tiger and Crane; tap forward to parry."
+intro_line = "Tiger or Crane… you won't see either coming."
 color = Color(0.25, 0.8, 0.75, 1)
 model_scene = ExtResource("2_tqora")
 animation_library = ExtResource("1_etaft")

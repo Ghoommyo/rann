@@ -8,7 +8,11 @@ class_name Rules
 
 # --- Rounds ---
 const ROUND_FRAMES := 99 * 60        # 99-second round timer
-const READY_FRAMES := 90             # "ROUND 1 … FIGHT!" before control is given
+const READY_FRAMES := 90             # "ROUND 2" before control is given
+## The first round starts with a 3, 2, 1 countdown, this long per number.
+const COUNTDOWN_STEP_FRAMES := 50
+## "FIGHT!" stays up this long once players have control.
+const FIGHT_BANNER_FRAMES := 45
 const ROUND_OVER_FRAMES := 150       # pause after a KO / time-out
 const WINS_TO_WIN_MATCH := 2         # best of 3
 
@@ -48,3 +52,9 @@ const PARRY_HITSTOP := 14
 
 ## Shown in the debug HUD when frame advantage doesn't apply (knockdowns, launches).
 const NO_ADVANTAGE := 9999
+
+
+## How long the READY phase lasts before a round: the 3-2-1 countdown before
+## the first round, a short "ROUND 2" banner before the others.
+static func ready_frames(round_number: int) -> int:
+	return COUNTDOWN_STEP_FRAMES * 3 if round_number == 1 else READY_FRAMES

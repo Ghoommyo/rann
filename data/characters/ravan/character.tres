@@ -26,6 +26,7 @@ walk_back_speed = 26
 stand_height = 1850
 style = ExtResource("3_style")
 description = "Ten-headed demon king. Long, heavy strikes and the Maya Wave; fill DASHANAN for Dashanan Rage."
+intro_line = "Ten heads. Ten times the fury."
 color = Color(0.7, 0.15, 0.2, 1)
 model_scene = ExtResource("2_uepos")
 animation_library = ExtResource("1_8rgdw")

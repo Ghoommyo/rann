@@ -29,7 +29,7 @@ func test_hit_event_once_at_contact():
 
 func test_round_start_and_ko_events():
 	state = FightState.create(defs, true)
-	var types := _collect(Rules.READY_FRAMES + 1, 0)
+	var types := _collect(Rules.ready_frames(1) + 1, 0)
 	assert_has(types, Event.ROUND_START)
 	H.place_p2_at_wall(state, defs, 700)
 	state.fighters[1].health = 1

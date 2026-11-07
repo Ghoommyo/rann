@@ -19,6 +19,7 @@ ROOT = os.path.join(os.path.dirname(__file__), "..", "data", "characters")
 KAEL = dict(
     id="kael", display_name="Kael", color=(0.95, 0.55, 0.15),
     description="Striker. Straightforward pressure; fills his Rage meter to unleash Rage Burst.",
+    intro_line="Let's see what you've got.",
     stats=dict(max_health=1050, walk_forward_speed=38, walk_back_speed=28),
     style=[("meter", dict(display_name="RAGE", max_value=1000, gain_on_hit=70, gain_on_block=25, gain_on_damage_taken=50))],
     moves=[
@@ -39,6 +40,7 @@ KAEL = dict(
 MIRA = dict(
     id="mira", display_name="Mira", color=(0.25, 0.8, 0.75),
     description="Stance dancer. Flows between Tiger and Crane; tap forward to parry.",
+    intro_line="Tiger or Crane… you won't see either coming.",
     stats=dict(max_health=950, walk_forward_speed=45, walk_back_speed=34),
     style=[("stance", dict(stances=["tiger", "crane"])),
            ("parry", dict(window_frames=5, cooldown_frames=40))],
@@ -66,6 +68,7 @@ MIRA = dict(
 TULBUL = dict(
     id="tulbul_pandey", display_name="Tulbul Pandey", color=(0.76, 0.65, 0.42),
     description="Swaggering cop. Long pokes and a belt whip keep you out; tap forward to parry. Darr nahi lagta… swag lagta hai.",
+    intro_line="Darr nahi lagta… swag lagta hai!",
     stats=dict(max_health=1000, walk_forward_speed=36, walk_back_speed=30),
     style=[("parry", dict(window_frames=6, cooldown_frames=40)),
            ("meter", dict(display_name="SWAG", max_value=1000, gain_on_hit=60, gain_on_block=30, gain_on_damage_taken=40))],
@@ -88,6 +91,7 @@ TULBUL = dict(
 BOGEMBO = dict(
     id="bogembo", display_name="Bogembo", color=(0.75, 0.6, 0.15),
     description="Supervillain boss. Slow and heavy; charge back for his Henchman Charge, and fear the Tezaab Drop. Bogembo khush hua!",
+    intro_line="Bogembo khush hua!",
     stats=dict(max_health=1150, walk_forward_speed=30, walk_back_speed=24, stand_height=1850, hurtbox_half_width=380),
     style=[("charge", dict(charge_frames=30, grace_frames=8)),
            ("meter", dict(display_name="KHUSH", max_value=1000, gain_on_hit=70, gain_on_block=30, gain_on_damage_taken=50))],
@@ -113,6 +117,7 @@ BOGEMBO = dict(
 RAVAN = dict(
     id="ravan", display_name="Ravan", color=(0.7, 0.15, 0.2),
     description="Ten-headed demon king. Long, heavy strikes and the Maya Wave; fill DASHANAN for Dashanan Rage.",
+    intro_line="Ten heads. Ten times the fury.",
     stats=dict(max_health=1100, walk_forward_speed=32, walk_back_speed=26, stand_height=1850),
     style=[("meter", dict(display_name="DASHANAN", max_value=1000, gain_on_hit=70, gain_on_block=25, gain_on_damage_taken=50))],
     moves=[
@@ -134,6 +139,7 @@ RAVAN = dict(
 ASWASHTHAMA = dict(
     id="aswashthama", display_name="Aswashthama", color=(0.3, 0.55, 0.9),
     description="Immortal warrior. Fast strings and dashing attacks; tap forward to parry. Fill MANI for Narayanastra.",
+    intro_line="I have watched ages fall. You are nothing.",
     stats=dict(max_health=950, walk_forward_speed=46, walk_back_speed=34),
     style=[("parry", dict(window_frames=5, cooldown_frames=40)),
            ("meter", dict(display_name="MANI", max_value=1000, gain_on_hit=65, gain_on_block=25, gain_on_damage_taken=40))],
@@ -240,7 +246,7 @@ def write_character(c):
     lines = ['[gd_resource type="Resource" script_class="CharacterDef" format=3]', ""] + ext + ["", "[resource]",
              'script = ExtResource("1_def")', f'id = "{c["id"]}"', f'display_name = "{c["display_name"]}"']
     lines += [f"{k} = {v}" for k, v in c["stats"].items()]
-    lines += ['style = ExtResource("3_style")', f'description = "{c["description"]}"',
+    lines += ['style = ExtResource("3_style")', f'description = "{c["description"]}"', f'intro_line = "{c.get("intro_line", "")}"',
               f"color = Color({r}, {g}, {b}, 1)",
               'moves = Array[ExtResource("2_move")]([' + ", ".join(refs) + "])"]
     with open(os.path.join(folder, "character.tres"), "w") as f:

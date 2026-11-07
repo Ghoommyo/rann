@@ -23,6 +23,7 @@ display_name = "Tulbul Pandey"
 walk_forward_speed = 36
 style = ExtResource("3_style")
 description = "Swaggering cop. Long pokes and a belt whip keep you out; tap forward to parry. Darr nahi lagta… swag lagta hai."
+intro_line = "Darr nahi lagta… swag lagta hai!"
 color = Color(0.76, 0.65, 0.42, 1)
 model_scene = ExtResource("2_cse0a")
 animation_library = ExtResource("1_2g11k")

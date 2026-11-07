@@ -1,7 +1,7 @@
 ## Shown before every fight: who's fighting, a countdown, a tip, and a space
 ## for an ad. The fight loads in the background meanwhile.
 ##
-## Stays up for Game.loading_seconds() (60 s) even when loading is done
+## Stays up for Game.loading_seconds() (5 s) even when loading is done
 ## sooner, because the ad will need the time. With Game.LOADING_SKIPPABLE, a
 ## "Skip" button appears once the fight has loaded.
 ##

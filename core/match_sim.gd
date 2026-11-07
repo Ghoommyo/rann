@@ -26,7 +26,7 @@ static func step(state: FightState, defs: Array[CharacterDef], input_p1: int, in
 
 	if state.phase == Phase.READY:
 		state.phase_frame += 1
-		if state.phase_frame >= Rules.READY_FRAMES:
+		if state.phase_frame >= Rules.ready_frames(state.round_number):
 			state.set_phase(Phase.FIGHTING)
 			state.emit(FightState.Event.ROUND_START, -1, 0, 0, state.round_number)
 		return
