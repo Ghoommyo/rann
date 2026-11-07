@@ -151,7 +151,7 @@ document.addEventListener("keydown", (event) => {
 
 // ---- Pages -----------------------------------------------------------------
 
-const PAGES = { dashboard: loadDashboard, users: loadUsers, players: loadPlayers };
+const PAGES = { dashboard: loadDashboard, users: loadUsers, players: loadPlayers, settings: loadSettings };
 
 function route() {
   if ($("portal").hidden) return;
@@ -446,6 +446,30 @@ async function setFighter(fighter, unlocked, button) {
     toast(err.message, true);
   }
 }
+
+// ---- Settings --------------------------------------------------------------
+
+async function loadSettings() {
+  const settings = await api("GET", "/settings");
+  const toggle = $("setting-email-verification");
+  toggle.setAttribute("aria-checked", String(settings.email_verification_required));
+  toggle.disabled = false;
+}
+
+$("setting-email-verification").addEventListener("click", async (event) => {
+  const toggle = event.currentTarget;
+  const on = toggle.getAttribute("aria-checked") !== "true";
+  toggle.disabled = true;
+  toggle.setAttribute("aria-checked", String(on));
+  try {
+    await api("PATCH", "/settings", { email_verification_required: on });
+    toast(on ? "Email verification is required for new players." : "Email verification is off: new players can play straight away.");
+  } catch (err) {
+    toggle.setAttribute("aria-checked", String(!on));
+    toast(err.message, true);
+  }
+  toggle.disabled = false;
+});
 
 // ---- Start -----------------------------------------------------------------
 

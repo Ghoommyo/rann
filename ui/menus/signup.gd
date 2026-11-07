@@ -30,7 +30,10 @@ func _sign_up() -> void:
 	if not is_inside_tree():
 		return
 	set_busy(false)
-	if result.ok:
+	if result.ok and Account.is_logged_in():
+		Game.notice = "Welcome to Rann, %s!" % Account.username()
+		Game.go_to_main_menu()
+	elif result.ok:
 		Account.pending_send_code = false  # the server just sent one
 		Game.notice = "Account created! We sent a 6-digit code to %s." % value("email")
 		Game.go_to(Game.VERIFY_EMAIL)

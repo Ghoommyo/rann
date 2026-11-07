@@ -156,3 +156,8 @@ td.num, th.num { text-align: right; }
   .menu-button .muted { display: none; }
   .toolbar input { max-width: none; }
 }
+
+/* Settings */
+.setting { display: flex; align-items: center; justify-content: space-between; gap: 20px; max-width: 760px; }
+.setting .name { font-weight: 700; font-size: 17px; }
+.setting p { margin: 6px 0 0; }

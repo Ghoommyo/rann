@@ -34,6 +34,7 @@
           <a href="#/dashboard">Dashboard</a>
           <a href="#/users">Users</a>
           <a href="#/players">Players</a>
+          <a href="#/settings">Settings</a>
           <button id="logout" type="button">Log out</button>
         </nav>
       </div>
@@ -82,6 +83,20 @@
           </div>
         </div>
         <div id="fighters-list" class="fighters"></div>
+      </section>
+
+      <section id="page-settings" hidden>
+        <h2>Settings</h2>
+        <div class="card setting">
+          <div>
+            <div class="name">Require email verification</div>
+            <p class="muted">On: new players must enter the 6-digit code we email them before they can play.
+              Off: sign-up logs them in straight away, and players who never confirmed can log in too.
+              Forgot-password and changing email or password still use emailed codes.</p>
+          </div>
+          <button type="button" id="setting-email-verification" class="switch" role="switch" aria-checked="true"
+            aria-label="Require email verification"></button>
+        </div>
       </section>
     </main>
   </div>

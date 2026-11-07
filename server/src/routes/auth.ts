@@ -7,6 +7,7 @@ import { hashPassword, verifyPassword } from "../auth/passwords.js";
 import { sha256 } from "../auth/tokens.js";
 import { sendCode, useCode } from "../emailCodes.js";
 import { issueTokens, revokeAllSessions } from "../sessions.js";
+import { getSettings } from "../settings.js";
 import { findUserByLogin, privateProfile, type UserRow } from "../users.js";
 
 const loginSchema = z.string().trim().min(1, "Enter your username or email.");
@@ -43,10 +44,21 @@ export function authRoutes({ db, mailer, authRateLimit }: Deps) {
         }
         throw err;
       }
+      reply.status(201);
+      // The admin can turn email confirmation off (portal → Settings): then
+      // the new player is logged in straight away.
+      if (!(await getSettings(db)).email_verification_required) {
+        return {
+          verification_required: false,
+          username: user.username,
+          email: user.email,
+          ...(await issueTokens(app, db, user.id)),
+          user: await privateProfile(db, user),
+        };
+      }
       // No login yet: the account works once the emailed code is entered
       // (POST /verify-email).
       await sendCode(db, mailer, user, "verify_email");
-      reply.status(201);
       return { verification_required: true, username: user.username, email: user.email };
     });
 
@@ -75,7 +87,9 @@ export function authRoutes({ db, mailer, authRateLimit }: Deps) {
       const user = await findUserByLogin(db, body.login);
       const ok = await verifyPassword(user?.password_hash ?? (await dummyHash), body.password);
       if (!user || !ok) throw unauthorized("Wrong username/email or password.");
-      if (!user.email_verified_at) throw forbidden("email_not_verified", "Confirm your email first: enter the code we emailed you.");
+      if (!user.email_verified_at && (await getSettings(db)).email_verification_required) {
+        throw forbidden("email_not_verified", "Confirm your email first: enter the code we emailed you.");
+      }
       if (user.disabled_by_admin) throw forbidden("account_disabled", "This account has been switched off. Contact support.");
       if (!user.is_active) {
         if (!body.reactivate) throw forbidden("account_deactivated", "This account is deactivated. Log in again to reactivate it.");

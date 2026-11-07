@@ -85,12 +85,16 @@ func restore() -> Dictionary:
 
 
 ## Creates the account and emails a code. Nobody is logged in until the code
-## is entered (verify_email).
+## is entered (verify_email), unless the admin turned email confirmation off:
+## then the new player is logged in straight away.
 func signup(new_username: String, email: String, password: String) -> Dictionary:
 	var result := await Api.send(HTTPClient.METHOD_POST, "/auth/signup",
 		{"username": new_username, "email": email, "password": password})
 	if result.ok:
-		pending_login = new_username
+		if result.data.has("access_token"):
+			_logged_in(result.data)  # the admin turned email confirmation off
+		else:
+			pending_login = new_username
 	return result
 
 

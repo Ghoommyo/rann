@@ -145,3 +145,42 @@ describe("portal pages", () => {
     expect(page.headers["content-type"]).toContain("text/html");
   });
 });
+
+describe("admin settings", () => {
+  it("email verification is required by default", async () => {
+    const admin = await adminToken();
+    expect((await call(ctx.app, "GET", "/admin/api/settings", undefined, admin)).body).toEqual({ email_verification_required: true });
+    const res = await call(ctx.app, "POST", "/auth/signup", { username: "newbie", email: "newbie@example.com", password: "password123" });
+    expect(res.body.verification_required).toBe(true);
+    expect(res.body.access_token).toBeUndefined();
+  });
+
+  it("when switched off, sign-up logs in straight away and no code is needed", async () => {
+    const admin = await adminToken();
+    const changed = await call(ctx.app, "PATCH", "/admin/api/settings", { email_verification_required: false }, admin);
+    expect(changed.body.email_verification_required).toBe(false);
+    const res = await call(ctx.app, "POST", "/auth/signup", { username: "newbie", email: "newbie@example.com", password: "password123" });
+    expect(res.status).toBe(201);
+    expect(res.body.verification_required).toBe(false);
+    expect(res.body.user.email_verified).toBe(false);
+    expect(ctx.mailer.outbox).toHaveLength(0);
+    expect((await call(ctx.app, "GET", "/me", undefined, res.body.access_token)).status).toBe(200);
+    expect((await call(ctx.app, "POST", "/auth/login", { login: "newbie", password: "password123" })).status).toBe(200);
+  });
+
+  it("switching it back on asks unconfirmed players for a code again", async () => {
+    const admin = await adminToken();
+    await call(ctx.app, "PATCH", "/admin/api/settings", { email_verification_required: false }, admin);
+    await call(ctx.app, "POST", "/auth/signup", { username: "newbie", email: "newbie@example.com", password: "password123" });
+    await call(ctx.app, "PATCH", "/admin/api/settings", { email_verification_required: true }, admin);
+    const login = await call(ctx.app, "POST", "/auth/login", { login: "newbie", password: "password123" });
+    expect(login.body.error).toBe("email_not_verified");
+  });
+
+  it("only admins change settings, and unknown settings are refused", async () => {
+    const player = await signup(ctx.app, "player1");
+    expect((await call(ctx.app, "PATCH", "/admin/api/settings", { email_verification_required: false }, player.access_token)).status).toBe(401);
+    const admin = await adminToken();
+    expect((await call(ctx.app, "PATCH", "/admin/api/settings", { something_else: 1 }, admin)).status).toBe(400);
+  });
+});

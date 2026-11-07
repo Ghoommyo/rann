@@ -7,6 +7,7 @@ import type { Db } from "../db.js";
 import { notFound, unauthorized } from "../errors.js";
 import { hashPassword, verifyPassword } from "../auth/passwords.js";
 import { revokeAllSessions } from "../sessions.js";
+import { getSettings, updateSettings } from "../settings.js";
 
 const ADMIN_TOKEN_TTL = "8h";
 const PAGE_SIZE = 50;
@@ -164,6 +165,17 @@ export function adminRoutes({ db, authRateLimit }: Deps) {
       );
       if (!rowCount) throw notFound("No such user.");
       return { ok: true, status: "active" };
+    });
+
+    app.get("/settings", async (req) => {
+      await currentAdmin(db, req);
+      return getSettings(db);
+    });
+
+    app.patch("/settings", async (req) => {
+      await currentAdmin(db, req);
+      const body = parse(z.object({ email_verification_required: z.boolean().optional() }).strict(), req.body);
+      return updateSettings(db, body);
     });
 
     app.get("/fighters", async (req) => {

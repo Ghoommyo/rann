@@ -83,7 +83,7 @@ npm run create-admin -- you@example.com
 ```
 It asks for the password twice. What you type isn't shown, and only a hash is stored.
 
-The top-right menu (☰) has **Dashboard**, **Users**, **Players** and **Log out**:
+The top-right menu (☰) has **Dashboard**, **Users**, **Players**, **Settings** and **Log out**:
 - **Dashboard**:
   - totals for users and ranked matches
   - charts of sign-ups, matches and players online per day (last 30 days)
@@ -99,6 +99,11 @@ The top-right menu (☰) has **Dashboard**, **Users**, **Players** and **Log out
   - Only active fighters can be picked; the others show as "?" in character select.
   - The game downloads the list at start-up and whenever character select opens. Offline,
     it uses the last list it got (Kael and Mira on a first launch with no connection).
+
+- **Settings**: **Require email verification** (on for a new server).
+  - **On**: new players enter the emailed 6-digit code before they can play.
+  - **Off**: sign-up logs them in straight away, and players who never confirmed can log in too.
+  - Forgot-password and changing an email or password still use emailed codes either way.
 
 Closing the browser tab logs you out; a login also expires after 8 hours.
 
@@ -143,7 +148,7 @@ Endpoints marked 🔒 need `Authorization: Bearer <access_token>`.
 
 | | |
 |---|---|
-| `POST /auth/signup` | `{username, email, password}` → `{verification_required, username, email}`; emails a code, no login yet |
+| `POST /auth/signup` | `{username, email, password}` → `{verification_required, username, email}`; emails a code, no login yet. With verification switched off (admin Settings): also tokens + profile, logged in |
 | `POST /auth/verify-email` | `{login, code}` → tokens + profile; `login` is a username or email |
 | `POST /auth/resend-verification` | `{login}`; always answers OK |
 | `POST /auth/login` | `{login, password, reactivate?}`; `email_not_verified` until the email is confirmed |
@@ -173,6 +178,7 @@ and admin tokens are refused everywhere else:
 | `GET /admin/api/users?status=active\|inactive&q=&page=` | 50 per page |
 | `POST /admin/api/users/:id/disable`, `/enable` | switch an account off / on |
 | `GET /admin/api/fighters`, `PATCH /admin/api/fighters/:id` | `{unlocked}` |
+| `GET /admin/api/settings`, `PATCH /admin/api/settings` | `{email_verification_required}` |
 
 Access tokens last 15 minutes; refresh tokens last 30 days. Passwords are hashed with
 argon2. Login, sign-up, code and password requests are limited per IP.
